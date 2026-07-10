@@ -1,0 +1,2 @@
+contrast,metric,estimate,ci_low,ci_high,bootstrap_repetitions,profiles,respondent_item_rows
+qwen3_8b_five_draw_mean_minus_hist_gradient_boosting,paired_ordinal_absolute_error,0.45646347533655196,0.40702093227971553,0.5071844969350469,2000,300,1496

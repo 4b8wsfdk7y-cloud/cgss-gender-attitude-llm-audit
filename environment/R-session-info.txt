@@ -1,0 +1,19 @@
+Validated R environment
+=======================
+
+R: 4.5.2
+
+Core packages:
+dplyr 1.2.0
+readr 2.2.0
+tidyr 1.3.2
+ggplot2 4.0.3
+psych 2.6.3
+patchwork 1.3.2
+scales 1.4.0
+jsonlite 2.0.0
+knitr 1.51
+rmarkdown 2.30
+
+The authorized-data builder also requires haven and tibble. Exact Python
+dependencies for the supervised benchmarks are pinned in ml/requirements.txt.

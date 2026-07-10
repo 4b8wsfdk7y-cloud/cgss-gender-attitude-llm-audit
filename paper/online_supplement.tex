@@ -1,0 +1,534 @@
+\documentclass[11pt]{article}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}[
+  Path=/System/Library/Fonts/Supplemental/,
+  UprightFont=Times New Roman.ttf,
+  BoldFont=Times New Roman Bold.ttf,
+  ItalicFont=Times New Roman Italic.ttf,
+  BoldItalicFont=Times New Roman Bold Italic.ttf
+]
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\singlespacing
+\usepackage{amsmath}
+\usepackage{booktabs,threeparttable,tabularx,array,longtable,pdflscape}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  justification=raggedright,
+  singlelinecheck=false
+}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{\textbf{ONLINE SUPPLEMENT}\\[0.5em]
+Synthetic Respondents without Ambivalence?\\
+A Population-Fidelity Audit of Large Language Model Survey Simulations}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Reproduction Map}
+
+\begingroup
+\sloppy
+The supplement documents the complete empirical inputs behind the manuscript. The replication
+archive is organized as follows:
+
+\begin{itemize}
+  \item \texttt{scripts/00\_build\_authorized\_benchmark.R}: reconstructs the restricted benchmark
+  object from locally held, authorized CGSS source files.
+  \item \texttt{scripts/01\_prepare\_profiles.R}: draws the weighted, stratified profile sample and
+  removes held-out human outcomes from the model-facing file.
+  \item \texttt{scripts/02\_run\_local\_llm.py}: calls the local Ollama endpoint, validates JSON
+  outputs, records seeds and prompt hashes, and resumes incomplete runs.
+  \item \texttt{scripts/03\_evaluate\_audit.R}: computes distributions, variance, correlations,
+  profile errors, prompt sensitivity, repeated-draw variance decomposition, profile-cluster
+  intervals, and subgroup gradients.
+  \item \texttt{scripts/04\_run\_independent\_items.py}: presents one item per fresh model call,
+  repeating the complete persona without retaining conversation history.
+  \item \texttt{scripts/05\_extended\_validation.R}: constructs the human-sampling reference
+  envelopes, weighted and polychoric correlation checks, and stratified joint-donor benchmark.
+  \item \texttt{ml/scripts/01\_export\_data.R} and
+  \texttt{ml/scripts/02\_train\_evaluate.py}: construct the survey-trained reference models,
+  out-of-fold predictions, temporal-transfer predictions, and profile-cluster bootstrap.
+  \item \texttt{paper\_smr/reproduce.R}: regenerates the Monte Carlo study and every main-text
+  figure from the saved analysis outputs.
+\end{itemize}
+
+The restricted local working copy retains immutable synthetic-response logs. The conservative
+public archive excludes profile-level logs and respondent-derived persona files; it contains code
+and aggregate results. Reconstructing the full audit therefore requires authorized access to the
+source CGSS waves and regenerated local model calls. Regenerating calls requires Ollama 0.31.1 and the
+\texttt{qwen3:8b} Q4\_K\_M model. The recorded Ollama model digest is:
+\begin{center}
+\footnotesize\ttfamily
+500a1f067a9f782620b40bee6f7b0c89\\
+e17ae61f686b92c24933e4ca4b2b8b41
+\end{center}
+\endgroup
+
+\section{Item Coding and Marginal Fidelity}
+
+All source responses use 1 for completely disagree and 5 for completely agree. A421--A424 are
+traditional statements and are reverse-coded for analysis; A425 is an egalitarian statement and is
+not reversed. Thus, all reported analytical scores range from 1 to 5, with larger values indicating
+greater gender egalitarianism.
+
+\begin{table}[!htbp]
+\centering
+\caption{Wave-specific means and total variation under the neutral prompt}
+\label{tab:s1-means}
+\begin{threeparttable}
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Wave & Item & CGSS mean & Qwen mean & Mean error & Total variation \\
+\midrule
+2012 & A421 & 2.519 & 2.332 & $-.187$ & .368 \\
+     & A422 & 3.007 & 3.408 &  .401 & .380 \\
+     & A423 & 2.884 & 1.920 & $-.964$ & .494 \\
+     & A424 & 3.867 & 2.396 & $-1.471$ & .707 \\
+     & A425 & 3.808 & 2.202 & $-1.606$ & .760 \\
+\addlinespace
+2018 & A421 & 2.974 & 2.756 & $-.218$ & .367 \\
+     & A422 & 3.263 & 3.726 &  .463 & .459 \\
+     & A423 & 3.100 & 2.120 & $-.980$ & .511 \\
+     & A424 & 3.985 & 2.640 & $-1.345$ & .617 \\
+     & A425 & 3.865 & 2.472 & $-1.393$ & .618 \\
+\addlinespace
+2021 & A421 & 2.908 & 2.792 & $-.116$ & .413 \\
+     & A422 & 3.251 & 3.768 &  .517 & .501 \\
+     & A423 & 3.116 & 2.010 & $-1.106$ & .524 \\
+     & A424 & 4.113 & 2.500 & $-1.613$ & .679 \\
+     & A425 & 4.047 & 2.292 & $-1.755$ & .736 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: CGSS means use full-sample survey weights. Qwen means pool five draws for each of the
+100 sampled profiles per wave. Total variation ranges from 0 for identical category shares to 1 for
+disjoint distributions.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Full-sample prompt ablation}
+\label{tab:s2-prompt}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Condition & Profiles & Mean absolute item error & Mean total variation \\
+\midrule
+Neutral verbal-label prompt & 300 & .942 & .542 \\
+Original anti-desirability prompt & 300 & 1.170 & .664 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: Both conditions use the same profiles. The mean same-profile absolute response shift
+between conditions is .581 points. Because wording and response format change together, this is an
+ablation rather than a factorial causal contrast.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Repeated-Draw and Independent-Item Follow-up}
+
+The primary revised analysis uses five joint-prompt draws for every profile. For each
+profile--item pair, the five observed categories define an empirical predictive distribution.
+Aggregate moments average those profile-level distributions. The original first draw is retained
+as a sensitivity analysis.
+
+Total predictive variance is decomposed as
+\begin{equation}
+  \operatorname{Var}(Y)
+  =
+  \operatorname{Var}_{i}\!\left\{\operatorname{E}(Y\mid i)\right\}
+  +
+  \operatorname{E}_{i}\!\left\{\operatorname{Var}(Y\mid i)\right\},
+\end{equation}
+where the first term is between-profile variance and the second is stochastic variance within a
+profile. Five draws provide an empirical approximation to both terms.
+
+The independent-item condition makes five separate API calls per profile. Every call repeats the
+complete persona but contains only one item, starts a new conversation, and contains no previous
+answer. The direction of the primary contrast was fixed before the full run:
+\[
+  \Delta_r
+  =
+  \overline{|r|}_{\mathrm{joint}}
+  -
+  \overline{|r|}_{\mathrm{independent}}.
+\]
+Profile-cluster bootstrap samples retain all items and all repeats for a sampled profile. Profiles
+are resampled within wave; item and repeat rows are never resampled separately.
+
+\section{Heterogeneity and Item Structure}
+
+\begin{table}[!htbp]
+\centering
+\caption{Qwen-to-human variance ratios under the neutral prompt}
+\label{tab:s3-variance}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Wave & A421 & A422 & A423 & A424 & A425 \\
+\midrule
+2012 & .412 & .577 & .256 & .660 & .305 \\
+2018 & .592 & .367 & .389 & 1.024 & .589 \\
+2021 & .545 & .303 & .249 & .723 & .385 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Recovery of the item-correlation structure}
+\label{tab:s4-correlations}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Wave & Correlation-matrix RMSE & Qwen A425 mean $|r|$ & CGSS A425 mean $|r|$ \\
+\midrule
+2012 & .282 & .460 & .051 \\
+2018 & .308 & .507 & .067 \\
+2021 & .288 & .437 & .061 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: Qwen entries average diagnostics calculated separately for the five repeated draws.
+A425 mean $|r|$ is the mean absolute Pearson correlation between A425 and A421--A424. Reversing
+A421--A424 changes correlation signs but not these absolute magnitudes.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Repeat stability under the joint neutral prompt}
+\label{tab:s4b-repeat}
+\small
+\begin{tabular}{lrr}
+\toprule
+Item & Share identical in all five draws & Mean within-profile SD \\
+\midrule
+A421 & .943 & .055 \\
+A422 & .797 & .174 \\
+A423 & .687 & .197 \\
+A424 & .577 & .397 \\
+A425 & .723 & .168 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Joint versus independent item presentation}
+\label{tab:s4c-independent}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Wave & CGSS mean $|r|$ & Joint mean $|r|$ & Independent mean $|r|$
+& Estimable pairs & Joint $-$ independent \\
+\midrule
+2012 & .051 & .460 & .433 & 2/4 & .026 \\
+2018 & .067 & .507 & .374 & 3/4 & .133 \\
+2021 & .061 & .437 & .308 & 4/4 & .130 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: The pooled wave-averaged joint-minus-independent contrast is .096; its 2,000-replication
+profile-cluster bootstrap interval is $[-.043,.156]$. A422 and A424 are constant or nearly constant
+in several independent-item cells, so lower correlation is not interpreted as recovered structure.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Monte Carlo Study}
+
+Each scenario uses the weighted 2021 CGSS category probabilities. The row bootstrap samples complete
+respondent rows using survey weights. Independent marginals sample each item separately. The
+coherent-factor condition uses a common latent normal factor with correlation parameter .65 and
+empirical category thresholds. Each row in \cref{tab:s5-simulation} summarizes 1,000 samples of
+$n=300$.
+
+\begin{table}[!htbp]
+\centering
+\caption{Monte Carlo means and Monte Carlo standard errors}
+\label{tab:s5-simulation}
+\begin{threeparttable}
+\scriptsize
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+& \multicolumn{2}{c}{Abs. mean error}
+& \multicolumn{2}{c}{Total variation}
+& \multicolumn{2}{c}{Variance ratio}
+& \multicolumn{2}{c}{Correlation RMSE}
+& \multicolumn{2}{c}{A425 mean $|r|$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+Scenario & Mean & MCSE & Mean & MCSE & Mean & MCSE & Mean & MCSE & Mean & MCSE \\
+\midrule
+Row bootstrap
+  & .0547 & .00067 & .0426 & .00027 & .997 & .00137
+  & .0505 & .00040 & .0905 & .00118 \\
+Independent marginals
+  & .0546 & .00061 & .0424 & .00023 & 1.000 & .00110
+  & .274 & .00052 & .0457 & .00054 \\
+Coherent factor
+  & .0559 & .00088 & .0435 & .00028 & .999 & .00137
+  & .371 & .00058 & .525 & .00083 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: MCSE is the replication standard deviation divided by $\sqrt{1000}$. The simulation
+seed is 20260702.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Subgroup-Gradient Recovery}
+
+\begin{landscape}
+\begin{longtable}{lllrrr}
+\caption{Human and Qwen demographic coefficients under the neutral prompt}
+\label{tab:s6-gradients}\\
+\toprule
+Wave & Outcome & Predictor & CGSS coefficient & Qwen coefficient & Error \\
+\midrule
+\endfirsthead
+\toprule
+Wave & Outcome & Predictor & CGSS coefficient & Qwen coefficient & Error \\
+\midrule
+\endhead
+2012 & Public index & Female & .089 & .359 & .270 \\
+     &              & Education (years) & .046 & .066 & .020 \\
+     &              & Age (decade) & $-.003$ & $-.010$ & $-.007$ \\
+     &              & Urban residence & .097 & .187 & .090 \\
+     & Equal housework & Female & .225 & .158 & $-.067$ \\
+     &                 & Education (years) & .021 & .042 & .021 \\
+     &                 & Age (decade) & .013 & $-.026$ & $-.039$ \\
+     &                 & Urban residence & .000 & .003 & .003 \\
+\addlinespace
+2018 & Public index & Female & .180 & .453 & .273 \\
+     &              & Education (years) & .050 & .075 & .026 \\
+     &              & Age (decade) & $-.066$ & $-.003$ & .064 \\
+     &              & Urban residence & .185 & .220 & .035 \\
+     & Equal housework & Female & .349 & .367 & .018 \\
+     &                 & Education (years) & .024 & .084 & .061 \\
+     &                 & Age (decade) & .010 & .003 & $-.008$ \\
+     &                 & Urban residence & $-.008$ & .219 & .227 \\
+\addlinespace
+2021 & Public index & Female & .174 & .389 & .215 \\
+     &              & Education (years) & .070 & .062 & $-.008$ \\
+     &              & Age (decade) & $-.097$ & $-.036$ & .062 \\
+     &              & Urban residence & .201 & .164 & $-.037$ \\
+     & Equal housework & Female & .328 & .130 & $-.198$ \\
+     &                 & Education (years) & .013 & .078 & .065 \\
+     &                 & Age (decade) & $-.014$ & .005 & .019 \\
+     &                 & Urban residence & .053 & .128 & .075 \\
+\bottomrule
+\multicolumn{6}{p{8.5in}}{\footnotesize Notes: Each outcome is regressed simultaneously on all four
+predictors. Human models use survey weights and full-wave samples; Qwen models use 100 profiles per
+wave. Across the 24 comparisons, coefficient RMSE is .117 and sign agreement is 83.3 percent.}\\
+\end{longtable}
+\end{landscape}
+
+\section{Predictive Benchmarks and Computation}
+
+\begin{table}[!htbp]
+\centering
+\caption{Same-profile predictive benchmarks}
+\label{tab:s7-matched}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Model & Ordinal MAE & Abs. mean error & Total variation & Variance ratio \\
+\midrule
+Weighted marginal prior & .975 & .127 & .097 & .992 \\
+Multinomial logit & .935 & .112 & .081 & .982 \\
+Histogram gradient boosting & .923 & .095 & .071 & .987 \\
+Qwen3-8B, neutral prompt & 1.379 & .917 & .538 & .466 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: All models are evaluated on the same 300 profiles. Machine-learning predictions are
+out of fold; Qwen metrics use each profile's five-draw empirical distribution. The paired
+Qwen-minus-HGB absolute-error difference is .456, with a 2,000-replication profile-cluster bootstrap
+interval of $[.407,.507]$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Temporal transfer: train on 2012 and 2018, evaluate 2021}
+\label{tab:s8-temporal}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Model & Ordinal MAE & Total variation & Variance ratio \\
+\midrule
+Weighted historical prior & .997 & .113 & .960 \\
+Multinomial logit & .961 & .139 & .928 \\
+Histogram gradient boosting & .945 & .107 & .959 \\
+Qwen3-8B on matched 2021 profiles & 1.442 & .561 & .459 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: Every row evaluates the exact 100-profile 2021 cohort, allowing item-specific missing
+human answers. The first three rows use only 2012--2018 outcomes for training; Qwen is zero-shot.
+The comparison concerns reconstruction on a common target cohort, not equal training budgets.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Model-call quality and software environment}
+\label{tab:s9-computation}
+\small
+\begin{tabularx}{\textwidth}{lY}
+\toprule
+Component & Recorded value \\
+\midrule
+LLM & Qwen3-8B, non-thinking mode, local Ollama 0.31.1 \\
+Decoding & Temperature .7; top-$p$ .9; fixed recorded seed \\
+Hardware & Apple M4 computer; 24 GB unified memory \\
+Calls & 3,331 logged attempts; 3,330 successful; success rate 99.97\% \\
+Latency & Median 4.92 seconds; 90th percentile 9.66 seconds \\
+Reference models & scikit-learn 1.7.2; five-fold out-of-fold evaluation \\
+R environment & R 4.5.2; package versions recorded in \texttt{environment/R-session-info.txt} \\
+Bootstrap & 2,000 profile-cluster replications within wave \\
+Monte Carlo & 1,000 replications; $n=300$; seed 20260702 \\
+Human sampling calibration & 1,000 samples per wave; $n=100$; seed 20260706 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Sampling Calibration and Joint Reconstruction}
+
+\begin{table}[!htbp]
+\centering
+\caption{A425 association under alternative human correlation estimators}
+\label{tab:s10-correlation-sensitivity}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Estimator & 2012 & 2018 & 2021 \\
+\midrule
+Unweighted Pearson & .051 & .067 & .061 \\
+Survey-weighted Pearson & .049 & .078 & .078 \\
+Unweighted polychoric & .069 & .091 & .084 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: Entries are the mean absolute correlations between A425 and A421--A424. The weak
+human association survives weighting and an ordinal latent-response estimator.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Joint outcome-informed benchmark versus Qwen3-8B}
+\label{tab:s11-joint-donor}
+\begin{threeparttable}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Generator & OMAE & TV & Variance ratio & Correlation RMSE & A425 mean $|r|$ \\
+\midrule
+Stratified joint donor & .987 & .070 & .973 & .085 & .105 \\
+Qwen3-8B & 1.379 & .538 & .466 & .293 & .468 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: Donors are matched on wave, sex, education group, and urban residence; the matched
+respondent is excluded. Five complete response vectors are sampled per profile using survey weights.
+OMAE, TV, and variance use the same matched profiles as the primary benchmark. Relational metrics
+compare each generated 100-profile matrix with the weighted full-sample correlation matrix.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Wave-specific human sampling envelopes and Qwen3-8B estimates}
+\label{tab:s12-sampling-envelope}
+\begin{threeparttable}
+\scriptsize
+\begin{tabular}{llrrr}
+\toprule
+Wave & Metric & Human 2.5th & Human 97.5th & Qwen \\
+\midrule
+2012 & Absolute mean error & .036 & .160 & .926 \\
+     & Total variation & .048 & .102 & .542 \\
+     & Variance ratio & .855 & 1.137 & .442 \\
+     & Correlation RMSE & .051 & .137 & .282 \\
+     & A425 mean $|r|$ & .037 & .198 & .460 \\
+\addlinespace
+2018 & Absolute mean error & .036 & .163 & .880 \\
+     & Total variation & .048 & .100 & .514 \\
+     & Variance ratio & .856 & 1.141 & .592 \\
+     & Correlation RMSE & .052 & .141 & .298 \\
+     & A425 mean $|r|$ & .041 & .234 & .507 \\
+\addlinespace
+2021 & Absolute mean error & .036 & .168 & 1.021 \\
+     & Total variation & .046 & .104 & .571 \\
+     & Variance ratio & .846 & 1.138 & .441 \\
+     & Correlation RMSE & .047 & .137 & .279 \\
+     & A425 mean $|r|$ & .034 & .219 & .437 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Notes: Human limits come from 1,000 repetitions of the same stratified,
+probability-proportional-to-weight profile design with $n=100$ per wave. Qwen lies outside the
+central 95 percent human reference envelope in all 15 cells.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Interpretation Boundaries}
+\enlargethispage{5\baselineskip}
+
+The revised neutral condition contains five independently seeded draws per profile. The share
+identical across all five draws ranges from .577 for A424 to .943 for A421. Repetition therefore
+reveals nonzero stochastic variation, but the resulting total variance remains well below the human
+benchmark in most wave-item cells.
+
+The \texttt{original\_verbal} and \texttt{paraphrased} conditions contain only ten profiles each.
+They are parsing diagnostics and are not used as population evidence. Only the 300-profile
+\texttt{original} and \texttt{neutral\_verbal} conditions support the prompt-ablation results.
+
+Finally, the supervised references and joint donor observe survey outcomes during training, whereas
+Qwen3-8B does not. Their role is to test whether sparse profile information is a sufficient
+explanation for the recorded distortion after outcome calibration. They do not isolate architecture
+from calibration, establish that a supervised learner is a substitute for human respondents, or
+model individual psychology.
+
+\end{document}

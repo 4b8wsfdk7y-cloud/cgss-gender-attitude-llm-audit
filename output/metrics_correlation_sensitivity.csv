@@ -1,0 +1,10 @@
+wave,method,a425_mean_abs_correlation
+2012,unweighted_pearson,0.05083572177542858
+2012,survey_weighted_pearson,0.0493725886928586
+2012,unweighted_polychoric,0.06852655731670561
+2018,unweighted_pearson,0.06704730575687054
+2018,survey_weighted_pearson,0.07822638385484526
+2018,unweighted_polychoric,0.09100293191496778
+2021,unweighted_pearson,0.0609635206692499
+2021,survey_weighted_pearson,0.07819950162680728
+2021,unweighted_polychoric,0.08394910851633298
