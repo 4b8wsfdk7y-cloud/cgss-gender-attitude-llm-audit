@@ -17,6 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from survey_llm_eval.responses import openai_response_schema, validate_joint_content
+from survey_llm_eval.runs import assert_output_compatible, load_completed
+
 
 SCRIPT_PATH = Path(__file__).resolve()
 AUDIT_ROOT = SCRIPT_PATH.parents[1]
@@ -31,23 +34,13 @@ LABEL_TO_SCORE = {
     "比较同意": 4,
     "完全同意": 5,
 }
-LABELS = tuple(LABEL_TO_SCORE)
-
-
 def cgss_response_schema() -> dict[str, Any]:
-    item_schema = {"type": "integer", "minimum": 1, "maximum": 5}
-    return {
-        "type": "json_schema",
-        "json_schema": {
-            "name": "cgss_gender_attitude_answers",
-            "schema": {
-                "type": "object",
-                "properties": {item: item_schema for item in ITEMS},
-                "required": list(ITEMS),
-                "additionalProperties": False,
-            },
-        },
-    }
+    return openai_response_schema(
+        ITEMS,
+        name="cgss_gender_attitude_answers",
+        minimum=1,
+        maximum=5,
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -120,51 +113,14 @@ def load_profiles(limit: int | None) -> list[dict[str, str]]:
     return selected[:limit]
 
 
-def load_completed(jsonl_path: Path) -> set[tuple[str, str, int]]:
-    completed: set[tuple[str, str, int]] = set()
-    if not jsonl_path.exists():
-        return completed
-    with jsonl_path.open(encoding="utf-8") as handle:
-        for line in handle:
-            try:
-                record = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if record.get("success"):
-                completed.add(
-                    (
-                        record["profile_id"],
-                        record["condition"],
-                        int(record["repeat"]),
-                    )
-                )
-    return completed
-
-
 def validate_scores(content: str) -> dict[str, int]:
-    parsed = json.loads(content)
-    if set(parsed) != set(ITEMS):
-        raise ValueError(f"Expected exactly {ITEMS}; received {tuple(parsed)}")
-    scores: dict[str, int] = {}
-    for item in ITEMS:
-        value = parsed[item]
-        if isinstance(value, dict):
-            if set(value) != {"label", "score"}:
-                raise ValueError(f"Invalid label-score object for {item}: {value}")
-            label = str(value["label"])
-            score = int(value["score"])
-            if label not in LABEL_TO_SCORE:
-                raise ValueError(f"Unknown response label for {item}: {label}")
-            if LABEL_TO_SCORE[label] != score:
-                raise ValueError(
-                    f"Inconsistent label and score for {item}: {value}"
-                )
-            scores[item] = score
-        else:
-            scores[item] = int(value)
-    if any(score < 1 or score > 5 for score in scores.values()):
-        raise ValueError(f"Scores outside 1..5: {scores}")
-    return scores
+    return validate_joint_content(
+        content,
+        ITEMS,
+        minimum=1,
+        maximum=5,
+        label_to_score=LABEL_TO_SCORE,
+    )
 
 
 def call_model(
@@ -313,6 +269,7 @@ def main() -> int:
     jsonl_path = output_dir / "responses.jsonl"
     csv_path = output_dir / "responses.csv"
     config = load_json(config_path)
+    config_sha256 = hashlib.sha256(config_path.read_bytes()).hexdigest()
     provider = config.get("provider", "ollama")
     if provider == "lmstudio":
         model_digest = check_lmstudio(config["lmstudio_base_url"], config["model"])
@@ -320,6 +277,7 @@ def main() -> int:
         model_digest = check_ollama(config["ollama_url"], config["model"])
     else:
         raise ValueError(f"Unknown provider: {provider}")
+    assert_output_compatible(jsonl_path, config["model"], model_digest)
     profiles = load_profiles(args.limit)
     repeats = args.repeats or int(config["repeats"])
     condition_paths = config["conditions"]
@@ -334,17 +292,6 @@ def main() -> int:
     }
     completed = load_completed(jsonl_path)
     total = len(profiles) * len(conditions) * repeats
-    pending = total - sum(
-        (row["profile_id"], condition, repeat) in completed
-        for row in profiles
-        for condition in conditions
-        for repeat in range(1, repeats + 1)
-    )
-    print(
-        f"Provider={provider} model={config['model']} digest={model_digest} "
-        f"profiles={len(profiles)} conditions={conditions} repeats={repeats} "
-        f"pending={pending} workers={args.workers} output={output_dir}"
-    )
 
     tasks: list[tuple[dict[str, str], str, str, int, str]] = []
     for profile in profiles:
@@ -354,9 +301,21 @@ def main() -> int:
             prompt_hash = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
             for repeat in range(1, repeats + 1):
                 key = (profile["profile_id"], condition, repeat)
-                if key in completed:
+                if completed.get(key) == prompt_hash:
                     continue
+                if key in completed:
+                    raise RuntimeError(
+                        f"Existing record {key} used a different prompt. Choose a "
+                        "separate --output-dir instead of mixing runs."
+                    )
                 tasks.append((profile, condition, prompt, repeat, prompt_hash))
+
+    pending = len(tasks)
+    print(
+        f"Provider={provider} model={config['model']} digest={model_digest} "
+        f"profiles={len(profiles)} conditions={conditions} repeats={repeats} "
+        f"total={total} pending={pending} workers={args.workers} output={output_dir}"
+    )
 
     write_lock = threading.Lock()
 
@@ -372,6 +331,7 @@ def main() -> int:
             "seed": seed,
             "model": config["model"],
             "model_digest": model_digest,
+            "config_sha256": config_sha256,
             "prompt_sha256": prompt_hash,
             "success": False,
         }

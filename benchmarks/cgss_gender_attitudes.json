@@ -1,0 +1,31 @@
+{
+  "name": "CGSS gender-attitude audit",
+  "description": "Ordinal-response fidelity audit for five gender-attitude items across CGSS waves.",
+  "profile_fields": [
+    "profile_id",
+    "wave",
+    "sex",
+    "education",
+    "urban"
+  ],
+  "items": [
+    {"id": "A421", "domain": "gendered spheres"},
+    {"id": "A422", "domain": "essentialist ability"},
+    {"id": "A423", "domain": "marriage and achievement"},
+    {"id": "A424", "domain": "employment priority"},
+    {"id": "A425", "domain": "household labor equality"}
+  ],
+  "scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "labels": {
+      "1": "completely disagree",
+      "2": "somewhat disagree",
+      "3": "neither agree nor disagree",
+      "4": "somewhat agree",
+      "5": "completely agree"
+    }
+  },
+  "subgroups": ["wave", "sex", "education", "urban"],
+  "data_boundary": "The public demo uses synthetic records. Authorized CGSS microdata remain local and are never redistributed."
+}

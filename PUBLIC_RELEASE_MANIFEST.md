@@ -5,12 +5,14 @@ microdata are licensed and are not redistributed.
 
 ## Include
 
-- `README.md`, `config.json`, and `FOLLOWUP_SPECIFICATION.md`
+- `README.md`, `config.json`, `FOLLOWUP_SPECIFICATION.md`, and `CITATION.cff`
+- `pyproject.toml`, `src/`, `tests/`, `.github/workflows/`, and `docs/`
+- `benchmarks/` and the explicitly synthetic fixture in `fixtures/`
 - `scripts/`, `prompts/`, and `ml/scripts/`
 - `ml/requirements.txt`, `ml/README.md`, and aggregate files in `ml/output/`
 - aggregate `output/metrics_*.csv`, except the replication-level file listed
   below
-- `paper_smr/` source files, bibliography, figures, and final PDFs
+- `paper/` source files, bibliography, figures, and final PDFs
 - `environment/R-session-info.txt`
 
 ## Exclude
@@ -41,7 +43,7 @@ Rscript scripts/03_evaluate_audit.R
 Rscript scripts/05_extended_validation.R
 Rscript ml/scripts/01_export_data.R
 ml/.venv/bin/python ml/scripts/02_train_evaluate.py
-Rscript paper_smr/reproduce.R
+Rscript paper/reproduce.R
 ```
 
 The first command creates `data/source/dimension_pilot_results.rds`. All

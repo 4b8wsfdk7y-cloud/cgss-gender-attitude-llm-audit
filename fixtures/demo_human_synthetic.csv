@@ -1,0 +1,13 @@
+profile_id,wave,sex,education,urban,A421,A422,A423,A424,A425
+demo_01,2012,woman,secondary,urban,4,3,4,4,2
+demo_02,2012,man,secondary,rural,5,4,4,4,2
+demo_03,2012,woman,college,urban,3,2,3,2,4
+demo_04,2012,man,college,rural,4,3,3,3,3
+demo_05,2018,woman,secondary,rural,4,3,4,3,3
+demo_06,2018,man,secondary,urban,4,4,3,4,2
+demo_07,2018,woman,college,urban,2,1,2,1,5
+demo_08,2018,man,college,rural,3,2,2,2,4
+demo_09,2021,woman,secondary,urban,3,2,3,2,4
+demo_10,2021,man,secondary,rural,4,3,3,3,3
+demo_11,2021,woman,college,rural,2,1,2,1,5
+demo_12,2021,man,college,urban,3,2,2,2,4
