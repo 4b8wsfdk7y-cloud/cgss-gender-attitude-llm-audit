@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from survey_llm_eval.responses import validate_single_content
+
 
 SCRIPT_PATH = Path(__file__).resolve()
 AUDIT_ROOT = SCRIPT_PATH.parents[1]
@@ -98,17 +100,13 @@ def deterministic_seed(base_seed: int, profile_id: str, item: str) -> int:
 
 
 def validate_content(content: str, item: str) -> tuple[str, int]:
-    parsed = json.loads(content)
-    if set(parsed) != {item}:
-        raise ValueError(f"Expected only {item}; received {tuple(parsed)}")
-    value = parsed[item]
-    if not isinstance(value, dict) or set(value) != {"label", "score"}:
-        raise ValueError(f"Invalid label-score object: {value}")
-    label = str(value["label"])
-    score = int(value["score"])
-    if label not in LABEL_TO_SCORE or LABEL_TO_SCORE[label] != score:
-        raise ValueError(f"Inconsistent label and score: {value}")
-    return label, score
+    return validate_single_content(
+        content,
+        item,
+        minimum=1,
+        maximum=5,
+        label_to_score=LABEL_TO_SCORE,
+    )
 
 
 def call_model(

@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+*.egg-info/
 .Rhistory
 .RData
 .Rproj.user/
@@ -11,6 +12,7 @@ data/profiles*.csv
 ml/data/
 output/responses*
 output/metrics_human_sampling_replications.csv
+output/public_demo/
 *.aux
 *.bcf
 *.bbl

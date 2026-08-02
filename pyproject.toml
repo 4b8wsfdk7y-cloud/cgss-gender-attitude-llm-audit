@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "survey-llm-eval"
+version = "0.1.0"
+description = "Estimand-aware evaluation of LLM-generated survey responses"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Song Ge" }]
+keywords = ["llm-evaluation", "survey-research", "computational-social-science"]
+dependencies = []
+
+[project.scripts]
+survey-llm-eval = "survey_llm_eval.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
