@@ -13,6 +13,8 @@
 [![Data](https://img.shields.io/badge/CGSS-data_restricted-B91C1C)](#data-and-reproducibility-boundary)
 [![License](https://img.shields.io/badge/code-MIT-059669)](LICENSE)
 
+[English](README.md) · [中文](README.zh-CN.md)
+
 [Overview](#overview) · [20-second result](#the-result-in-20-seconds) · [What I built](#what-i-built) ·
 [Architecture](#system-architecture) · [Results](#results-at-a-glance) · [Quick start](#public-quick-start) ·
 [Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts)
