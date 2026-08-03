@@ -2,9 +2,9 @@
 
 # SurveyLLM-Eval
 
-### Can an LLM reproduce a survey population—not just its average answer?
+### Can an LLM reproduce a real survey population from demographics alone?
 
-**An estimand-aware audit using three waves of CGSS gender-attitude data**
+**A reproducible audit of Qwen3.5-9B against 31,856 CGSS respondents**
 
 [![test](https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -13,11 +13,32 @@
 [![Data](https://img.shields.io/badge/CGSS-data_restricted-B91C1C)](#data-and-reproducibility-boundary)
 [![License](https://img.shields.io/badge/code-MIT-059669)](LICENSE)
 
-[20-second result](#the-result-in-20-seconds) · [What I built](#what-i-built) ·
+[Overview](#overview) · [20-second result](#the-result-in-20-seconds) · [What I built](#what-i-built) ·
 [Architecture](#system-architecture) · [Results](#results-at-a-glance) · [Quick start](#public-quick-start) ·
 [Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts)
 
 </div>
+
+## Overview
+
+SurveyLLM-Eval asks whether LLM-generated “synthetic respondents” can recover
+a real population—not merely produce one answer that sounds human. I gave a
+locally run Qwen3.5-9B model only the demographic attributes of 300
+de-identified profiles sampled from CGSS 2012, 2018, and 2021. The model never
+saw those respondents' actual attitudes. It answered the same five-item
+gender-attitude battery in five fresh calls per profile.
+
+I compared the generated population with weighted benchmarks from 31,856 human
+respondents, repeated human samples of the same size, survey-trained machine-
+learning models, and a joint-donor baseline. The audit tests not only means,
+but also category distributions, stable differences between profiles, and
+relationships among attitudes.
+
+The result is mixed but ultimately negative: Qwen3.5-9B recovers one wave's
+overall response variance, but 11 of 12 wave-level core diagnostics still fall
+outside the human-sampling reference range. This repository contains the local
+inference pipeline, audit package, public synthetic demo, tests, aggregate
+findings, and accompanying paper.
 
 ## The result in 20 seconds
 
