@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from math import fsum
+from itertools import combinations
+from math import fsum, sqrt
 from typing import Any, Iterable, Mapping, Sequence
 
 
@@ -107,6 +108,91 @@ def evaluate_subgroups(
                     }
                 )
     return diagnostics
+
+
+def pearson_correlation(
+    rows: Sequence[Mapping[str, Any]], left_item: str, right_item: str
+) -> float | None:
+    """Return a pairwise-complete Pearson correlation for two survey items."""
+
+    pairs = [
+        (int(row[left_item]), int(row[right_item]))
+        for row in rows
+        if row.get(left_item) not in (None, "")
+        and row.get(right_item) not in (None, "")
+    ]
+    if len(pairs) < 2:
+        return None
+
+    left_values = [pair[0] for pair in pairs]
+    right_values = [pair[1] for pair in pairs]
+    left_mean = _mean(left_values)
+    right_mean = _mean(right_values)
+    numerator = fsum(
+        (left - left_mean) * (right - right_mean)
+        for left, right in pairs
+    )
+    left_sum_squares = fsum((value - left_mean) ** 2 for value in left_values)
+    right_sum_squares = fsum((value - right_mean) ** 2 for value in right_values)
+    denominator = sqrt(left_sum_squares * right_sum_squares)
+    if denominator == 0:
+        return None
+    return numerator / denominator
+
+
+def evaluate_correlations(
+    human_rows: Sequence[Mapping[str, Any]],
+    model_rows: Sequence[Mapping[str, Any]],
+    items: Sequence[str],
+) -> dict[str, Any]:
+    """Compare human and model pairwise correlations without extra dependencies."""
+
+    diagnostics: list[dict[str, Any]] = []
+    squared_errors: list[float] = []
+    for left_item, right_item in combinations(items, 2):
+        human_correlation = pearson_correlation(
+            human_rows, left_item, right_item
+        )
+        model_correlation = pearson_correlation(
+            model_rows, left_item, right_item
+        )
+        absolute_error = None
+        if human_correlation is not None and model_correlation is not None:
+            error = model_correlation - human_correlation
+            absolute_error = abs(error)
+            squared_errors.append(error**2)
+        diagnostics.append(
+            {
+                "left_item": left_item,
+                "right_item": right_item,
+                "human_correlation": (
+                    round(human_correlation, 6)
+                    if human_correlation is not None
+                    else None
+                ),
+                "model_correlation": (
+                    round(model_correlation, 6)
+                    if model_correlation is not None
+                    else None
+                ),
+                "absolute_error": (
+                    round(absolute_error, 6)
+                    if absolute_error is not None
+                    else None
+                ),
+            }
+        )
+
+    return {
+        "eligible_pairs": len(squared_errors),
+        "total_pairs": len(diagnostics),
+        "correlation_rmse": (
+            round(sqrt(fsum(squared_errors) / len(squared_errors)), 6)
+            if squared_errors
+            else None
+        ),
+        "pairs": diagnostics,
+    }
 
 
 def within_profile_agreement(

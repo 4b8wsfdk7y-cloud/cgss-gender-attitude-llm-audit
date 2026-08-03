@@ -11,7 +11,7 @@ flowchart LR
     V --> A[Immutable response records]
     H[Human reference records] --> E[Evaluation engine]
     A --> E
-    E --> R[Marginal, subgroup, and stability report]
+    E --> R[Marginal, subgroup, relational, and stability report]
 ```
 
 ## Public path
@@ -19,6 +19,10 @@ flowchart LR
 `survey-llm-eval demo` uses a small synthetic human-reference fixture and a
 deterministic mock adapter. It verifies installation, schemas, metrics, report
 generation, and the command-line interface. It is not an LLM benchmark result.
+
+`survey-llm-eval evaluate` accepts any human-reference and model-response CSVs
+that conform to the selected benchmark specification. It emits aggregate JSON
+diagnostics and does not copy row-level source data into the report.
 
 ## Authorized research path
 
