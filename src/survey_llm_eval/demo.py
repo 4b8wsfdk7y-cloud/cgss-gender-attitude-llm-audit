@@ -1,4 +1,4 @@
-"""End-to-end public demo using synthetic records and a deterministic mock model."""
+"""Evaluation orchestration and the dependency-free public demo."""
 
 from __future__ import annotations
 
@@ -7,7 +7,12 @@ from pathlib import Path
 from typing import Any
 
 from .io import read_csv, write_csv, write_json
-from .metrics import evaluate_marginals, evaluate_subgroups, within_profile_agreement
+from .metrics import (
+    evaluate_correlations,
+    evaluate_marginals,
+    evaluate_subgroups,
+    within_profile_agreement,
+)
 from .model import DeterministicMockModel
 from .spec import BenchmarkSpec
 
@@ -16,6 +21,70 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SPEC = REPOSITORY_ROOT / "benchmarks" / "cgss_gender_attitudes.json"
 DEFAULT_HUMAN = REPOSITORY_ROOT / "fixtures" / "demo_human_synthetic.csv"
 DEFAULT_OUTPUT = REPOSITORY_ROOT / "output" / "public_demo"
+
+
+def evaluate_records(
+    *,
+    spec: BenchmarkSpec,
+    human_rows: list[dict[str, Any]],
+    model_rows: list[dict[str, Any]],
+    report_type: str,
+    data_notice: str,
+) -> dict[str, Any]:
+    """Validate two response datasets and return aggregate fidelity diagnostics."""
+
+    for row in human_rows:
+        spec.validate_row(row, require_items=True)
+    for row in model_rows:
+        spec.validate_row(row, require_items=True)
+
+    return {
+        "benchmark": spec.name,
+        "benchmark_spec_sha256": spec.sha256,
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "report_type": report_type,
+        "data_notice": data_notice,
+        "human_records": len(human_rows),
+        "model_records": len(model_rows),
+        "marginal_diagnostics": evaluate_marginals(
+            human_rows, model_rows, spec.items, spec.scale_values
+        ),
+        "subgroup_diagnostics": evaluate_subgroups(
+            human_rows,
+            model_rows,
+            spec.items,
+            spec.scale_values,
+            spec.subgroups,
+        ),
+        "relational_diagnostics": evaluate_correlations(
+            human_rows, model_rows, spec.items
+        ),
+        "repeat_stability": within_profile_agreement(model_rows, spec.items),
+    }
+
+
+def evaluate_csv_files(
+    *,
+    spec_path: str | Path,
+    human_path: str | Path,
+    model_path: str | Path,
+    output_path: str | Path,
+) -> dict[str, Any]:
+    """Evaluate user-supplied CSV files and write one aggregate JSON report."""
+
+    spec = BenchmarkSpec.from_path(spec_path)
+    report = evaluate_records(
+        spec=spec,
+        human_rows=read_csv(human_path),
+        model_rows=read_csv(model_path),
+        report_type="user_supplied_evaluation",
+        data_notice=(
+            "The report contains aggregate diagnostics computed from user-supplied "
+            "files. Source records are not copied into the report."
+        ),
+    )
+    write_json(output_path, report)
+    return report
 
 
 def run_demo(
@@ -52,30 +121,18 @@ def run_demo(
                 }
             )
 
-    report = {
-        "benchmark": spec.name,
-        "benchmark_spec_sha256": spec.sha256,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "demo_only": True,
-        "data_notice": (
+    report = evaluate_records(
+        spec=spec,
+        human_rows=human_rows,
+        model_rows=model_rows,
+        report_type="synthetic_demo",
+        data_notice=(
             "All inputs are synthetic. The mock adapter exercises the evaluation "
             "pipeline and does not represent an LLM or a CGSS result."
         ),
-        "human_records": len(human_rows),
-        "model_records": len(model_rows),
-        "repeats": repeats,
-        "marginal_diagnostics": evaluate_marginals(
-            human_rows, model_rows, spec.items, spec.scale_values
-        ),
-        "subgroup_diagnostics": evaluate_subgroups(
-            human_rows,
-            model_rows,
-            spec.items,
-            spec.scale_values,
-            spec.subgroups,
-        ),
-        "repeat_stability": within_profile_agreement(model_rows, spec.items),
-    }
+    )
+    report["demo_only"] = True
+    report["repeats"] = repeats
 
     output_path = Path(output_dir)
     write_csv(output_path / "mock_responses.csv", model_rows)

@@ -32,19 +32,20 @@ class BenchmarkSpecTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "non-empty and unique"):
                 BenchmarkSpec.from_path(path)
 
-    def test_default_config_matches_frozen_paper_model(self) -> None:
-        default_config = json.loads(
+    def test_current_and_legacy_model_configs_are_explicit(self) -> None:
+        legacy_config = json.loads(
             (REPOSITORY_ROOT / "config.json").read_text(encoding="utf-8")
         )
-        followup_config = json.loads(
+        current_config = json.loads(
             (REPOSITORY_ROOT / "config_qwen35_lmstudio.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(default_config["provider"], "ollama")
-        self.assertEqual(default_config["model"], "qwen3:8b")
-        self.assertEqual(followup_config["provider"], "lmstudio")
-        self.assertNotEqual(default_config["model"], followup_config["model"])
+        self.assertEqual(legacy_config["provider"], "ollama")
+        self.assertEqual(legacy_config["model"], "qwen3:8b")
+        self.assertEqual(current_config["provider"], "lmstudio")
+        self.assertEqual(current_config["model"], "qwen/qwen3.5-9b")
+        self.assertNotEqual(legacy_config["model"], current_config["model"])
 
 
 if __name__ == "__main__":

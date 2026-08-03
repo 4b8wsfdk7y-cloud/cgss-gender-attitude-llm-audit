@@ -1,7 +1,9 @@
 import unittest
 
 from survey_llm_eval.metrics import (
+    evaluate_correlations,
     evaluate_marginals,
+    pearson_correlation,
     total_variation,
     within_profile_agreement,
 )
@@ -30,6 +32,25 @@ class MetricsTest(unittest.TestCase):
         result = within_profile_agreement(rows, ["A1"])
         self.assertEqual(result["profile_item_cells"], 1)
         self.assertAlmostEqual(result["mean_modal_agreement"], 2 / 3, places=6)
+
+    def test_correlation_structure_error(self) -> None:
+        human = [
+            {"A1": 1, "A2": 1},
+            {"A1": 2, "A2": 2},
+            {"A1": 3, "A2": 3},
+        ]
+        model = [
+            {"A1": 1, "A2": 3},
+            {"A1": 2, "A2": 2},
+            {"A1": 3, "A2": 1},
+        ]
+        result = evaluate_correlations(human, model, ["A1", "A2"])
+        self.assertEqual(result["eligible_pairs"], 1)
+        self.assertAlmostEqual(result["correlation_rmse"], 2.0)
+
+    def test_constant_item_has_no_defined_correlation(self) -> None:
+        rows = [{"A1": 1, "A2": 2}, {"A1": 1, "A2": 3}]
+        self.assertIsNone(pearson_correlation(rows, "A1", "A2"))
 
 
 if __name__ == "__main__":

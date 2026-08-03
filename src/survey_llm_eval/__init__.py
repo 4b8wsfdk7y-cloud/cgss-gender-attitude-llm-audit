@@ -1,12 +1,20 @@
 """Reusable evaluation components for LLM-generated survey responses."""
 
-from .metrics import evaluate_marginals, evaluate_subgroups, total_variation
+from .metrics import (
+    evaluate_correlations,
+    evaluate_marginals,
+    evaluate_subgroups,
+    pearson_correlation,
+    total_variation,
+)
 from .spec import BenchmarkSpec
 
 __all__ = [
     "BenchmarkSpec",
+    "evaluate_correlations",
     "evaluate_marginals",
     "evaluate_subgroups",
+    "pearson_correlation",
     "total_variation",
 ]
 

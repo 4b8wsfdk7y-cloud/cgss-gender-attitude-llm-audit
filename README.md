@@ -13,11 +13,45 @@
 [![Data](https://img.shields.io/badge/CGSS-data_restricted-B91C1C)](#data-and-reproducibility-boundary)
 [![License](https://img.shields.io/badge/code-MIT-059669)](LICENSE)
 
-[Why this audit](#why-this-audit) · [Architecture](#system-architecture) ·
-[Results](#results-at-a-glance) · [Quick start](#public-quick-start) ·
+[20-second result](#the-result-in-20-seconds) · [What I built](#what-i-built) ·
+[Architecture](#system-architecture) · [Results](#results-at-a-glance) · [Quick start](#public-quick-start) ·
 [Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts)
 
 </div>
+
+## The result in 20 seconds
+
+The local Qwen3.5-9B model produces fluent, profile-conditioned answers, but it
+does not recover the surveyed population. Across CGSS 2012, 2018, and 2021,
+11 of 12 wave-level core diagnostics fall outside the corresponding 95% human-
+sampling envelope; only the 2012 variance ratio falls inside.
+
+| Mean error ↓ | Distribution error ↓ | Variance recovery → 1 | Correlation error ↓ |
+|---:|---:|---:|---:|
+| **0.569–0.707** | **0.214–0.268** | **0.668–0.975** | **0.143–0.192** |
+| Human upper bound: 0.168 | Human upper bound: 0.104 | Human range: 0.846–1.141 | Human upper bound: 0.141 |
+
+![Marginal fidelity across three CGSS waves](output/figures/marginal_fidelity.png)
+
+Qwen3.5-9B improves substantially on the earlier Qwen3-8B run, especially in
+variance recovery. The remaining failure is still structural: item means and
+category shares are distorted, stable between-profile differences are weak,
+and the joint prompt makes attitudes more coherent than they are in CGSS.
+
+## What I built
+
+This project connects a substantive survey question to a reproducible software
+and evaluation system:
+
+| Layer | Implementation | What it demonstrates |
+|---|---|---|
+| Local inference | Ollama / LM Studio adapters, strict JSON schemas, recorded sampling requests | LLM systems engineering without sending restricted data to external APIs |
+| Run reliability | Append-only JSONL ledger, prompt/config/model hashes, resumable calls | Defensive pipeline design and experiment provenance |
+| Evaluation | Python package plus survey-weighted R analysis | Marginal, subgroup, variance, correlation, stability, and predictive diagnostics |
+| Benchmarking | Human-sampling envelopes, joint-donor and supervised baselines | Separating sparse-profile limits from generator-specific failure |
+| Public release | Synthetic fixture, CLI, tests, CI, documented data boundary | Reproducibility without redistributing licensed microdata |
+
+![Four-stage population-fidelity audit](output/figures/audit_design.png)
 
 ## Why this audit
 
@@ -92,15 +126,15 @@ See [`docs/architecture.md`](docs/architecture.md) for the package-level design.
 | Survey benchmark | CGSS 2012, 2018, and 2021 |
 | Attitude battery | five ordinal gender-attitude items, A421–A425 |
 | Profile sample | 300 total: 100 stratified profiles per wave |
-| Local model | `qwen3:8b` served through Ollama |
+| Local model | `qwen/qwen3.5-9b` served through LM Studio |
 | Primary prompt | `neutral_verbal` |
-| Repeated generation | five independently seeded joint draws per profile |
+| Repeated generation | five fresh stochastic joint calls per profile |
 | Human reference | 1,000 replications of the same stratified sampling design |
-| Reliability | 1,820 of 1,821 recorded calls succeeded across pilot conditions |
+| Reliability | all 1,500 primary joint calls succeeded |
 
-`qwen/qwen3.5-9b` through LM Studio is retained as a **candidate follow-up** in
-`config_qwen35_lmstudio.json`. It is not relabeled as the source of the frozen
-results below.
+The frozen results use `config_qwen35_lmstudio.json`. LM Studio did not confirm
+that requested seeds were applied, so repeats are treated as fresh stochastic
+calls rather than exactly reproducible seeded draws.
 
 ## Evaluation design
 
@@ -111,7 +145,7 @@ sampled humans rather than generated answers.
 ```mermaid
 flowchart TB
     P["Same stratified profile design"] --> H["Human reference draws<br/>1,000 replications"]
-    P --> Q["Qwen3-8B draws<br/>five repeats per profile"]
+    P --> Q["Qwen3.5-9B draws<br/>five fresh calls per profile"]
 
     H --> E["Comparable diagnostics by wave"]
     Q --> E
@@ -133,45 +167,45 @@ questions and are reported separately.
 
 ## Results at a glance
 
-Across all three waves, every reported Qwen marginal, dispersion, and
-relational diagnostic falls outside its corresponding 95% human-sampling
-envelope.
+Across the three waves, 11 of 12 core Qwen3.5-9B diagnostics fall outside the
+corresponding 95% human-sampling envelope. The exception is the 2012 variance
+ratio; the 2018 and 2021 variance ratios remain below the human range.
 
 | Diagnostic | Qwen estimate across waves | Human 95% reference | Reading |
 |---|---:|---:|---|
-| Absolute mean error ↓ | 0.880–1.021 | upper bound 0.160–0.168 | Large marginal error |
-| Total variation ↓ | 0.514–0.571 | upper bound 0.100–0.104 | Wrong category distributions |
-| Variance ratio → 1 | 0.441–0.592 | 0.846–1.141 | Strong variance compression |
-| Correlation RMSE ↓ | 0.279–0.298 | upper bound 0.137–0.141 | Wrong joint structure |
-| A425 mean absolute correlation ↓ | 0.437–0.507 | upper bound 0.198–0.234 | Excessive cross-item coherence |
-
-![Weighted CGSS means versus local-LLM means](output/figures/item_mean_comparison.png)
-
-*The diagonal denotes equality between weighted CGSS and model means. This is
-one diagnostic; matching means alone would not establish population fidelity.*
+| Absolute mean error ↓ | 0.569–0.707 | upper bound 0.160–0.168 | Large marginal error |
+| Total variation ↓ | 0.214–0.268 | upper bound 0.100–0.104 | Wrong category distributions |
+| Variance ratio → 1 | 0.668–0.975 | 0.846–1.141 | Improved, but inconsistent across waves |
+| Correlation RMSE ↓ | 0.143–0.192 | upper bound 0.137–0.141 | Wrong joint structure |
+| A425 mean absolute correlation ↓ | 0.232–0.335 | upper bound 0.198–0.234 | Excessive cross-item coherence |
 
 Three findings matter most:
 
-1. **Neutral prompting helps but does not solve the problem.** It reduces mean
-   error relative to the original prompt, while the model remains outside the
-   human reference envelope.
-2. **Repeated draws restore some randomness, not the human distribution.** The
-   mean variance ratio is `0.466`, so the generated population remains much
-   less heterogeneous than CGSS.
-3. **The main failure is structural.** A stratified joint-donor baseline that
-   preserves complete human response vectors recovers variance and covariance
-   much more closely. Fluent profile conditioning alone is insufficient.
+1. **The bias is item-specific, not a uniform ideological shift.** Qwen3.5-9B
+   overstates egalitarianism on A421–A424 but understates support for equal
+   housework on A425.
+2. **Repeated draws restore randomness more than stable social differences.**
+   The mean marginal variance ratio is `0.794`, but `68.2%` of predictive
+   variance occurs within profiles across calls; the between-profile ratio is
+   only `0.265`.
+3. **Sparse profiles are not the whole explanation.** HGB reduces total
+   variation from `0.282` to `0.071`, while a joint-donor baseline reduces
+   correlation RMSE from `0.173` to `0.085`.
 
-The independent-item ablation reduces A425 coherence by `0.096` on average,
-but its profile-bootstrap interval includes zero, and several item-wave cells
-become constant or nearly constant. It is exploratory evidence, not a causal
-isolation of prompt context.
+![Outcome-informed benchmark comparison](output/figures/benchmark_comparison.png)
+
+The independent-item ablation reduces A425 coherence by `0.130` on average
+(profile-bootstrap 95% interval: `0.050–0.178`). The reduction is concentrated
+in 2018, and independent presentation does not consistently recover the human
+structure. It is evidence about a presentation bundle, not a clean causal
+isolation of shared context.
 
 ## Public quick start
 
 The public demo requires no CGSS data, model download, or API key. It uses a
 clearly labeled synthetic fixture and deterministic mock adapter to exercise
-the package, schemas, metrics, report generation, and CLI.
+the package, schemas, marginal and relational metrics, report generation, and
+CLI.
 
 ```bash
 git clone https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit.git
@@ -191,6 +225,7 @@ Expected CLI summary:
   "demo_only": true,
   "human_records": 12,
   "model_records": 36,
+  "correlation_rmse": 0.81965,
   "output_dir": "output/public_demo"
 }
 ```
@@ -198,6 +233,21 @@ Expected CLI summary:
 The demo writes `output/public_demo/demo_report.json` and
 `mock_responses.csv`. These are software fixtures—not CGSS findings or model
 benchmark results.
+
+To evaluate another benchmark with the same schema, provide one human-reference
+CSV and one model-response CSV. The command validates both inputs and writes
+aggregate diagnostics without copying source records into the report:
+
+```bash
+survey-llm-eval evaluate \
+  --spec benchmarks/cgss_gender_attitudes.json \
+  --human fixtures/demo_human_synthetic.csv \
+  --model output/public_demo/mock_responses.csv \
+  --output output/public_demo/evaluation_report.json
+```
+
+The report covers category distributions, mean and variance errors, subgroup
+diagnostics, pairwise-correlation RMSE, and within-profile repeat stability.
 
 ```mermaid
 flowchart LR
@@ -236,11 +286,12 @@ pilot input. Inspect those rows before starting inference.
 
 ### 3. Run local inference
 
-Start Ollama with `qwen3:8b`, then run the primary condition explicitly:
+Start LM Studio, load `qwen/qwen3.5-9b`, and run the primary condition:
 
 ```bash
 python3 scripts/02_run_local_llm.py \
-  --config config.json \
+  --config config_qwen35_lmstudio.json \
+  --output-dir output_qwen35 \
   --conditions neutral_verbal \
   --repeats 5
 ```
@@ -251,8 +302,8 @@ directory for every model configuration:
 
 ```bash
 python3 scripts/02_run_local_llm.py \
-  --config config_qwen35_lmstudio.json \
-  --output-dir output/qwen35_followup \
+  --config config_ollama_qwen3_8b.json \
+  --output-dir output_qwen3_8b_legacy \
   --conditions neutral_verbal \
   --repeats 5
 ```
@@ -319,9 +370,10 @@ survey-llm-eval/
   `environment/R-session-info.txt`
 - Python 3.10 or later; the LLM runners use the standard library only
 - supervised ML dependencies are pinned in `ml/requirements.txt`
-- frozen results: `qwen3:8b` through Ollama, configured in `config.json`
-- candidate follow-up: `qwen/qwen3.5-9b` through LM Studio, configured in
+- frozen results: `qwen/qwen3.5-9b` through LM Studio, configured in
   `config_qwen35_lmstudio.json`
+- legacy comparison setup: `qwen3:8b` through Ollama, configured in
+  `config_ollama_qwen3_8b.json`
 
 ## Main outputs
 
@@ -336,14 +388,16 @@ survey-llm-eval/
 
 ## Research artifacts
 
+- [`paper/main_showcase.pdf`](paper/main_showcase.pdf) — current English
+  Qwen3.5-9B showcase manuscript
 - [`paper/chinese-audit-paper.pdf`](paper/chinese-audit-paper.pdf) — Chinese
-  research paper
-- [`paper/main_showcase.pdf`](paper/main_showcase.pdf) — English showcase
-  manuscript
+  Qwen3.5-9B research paper
 - [`presentation/ppe-forum-presentation.pdf`](presentation/ppe-forum-presentation.pdf)
-  — PPE forum presentation connecting the survey study and LLM audit
-- [`paper/online_supplement.pdf`](paper/online_supplement.pdf) — methods and
-  robustness supplement
+  — Qwen3.5-9B PPE forum presentation
+
+The earlier `main_submission` and `online_supplement` files report the legacy
+Qwen3-8B run and are retained only as a versioned research trail. They should
+not be read as supplements to the current Qwen3.5-9B showcase manuscript.
 
 ## Data and reproducibility boundary
 
