@@ -72,4 +72,18 @@ synthetic population, and graded-response discrimination for A425.
 
 ## Changes
 
-None yet.
+**2026-10-14, output-projection precision (before any Part 1–2 outcome was
+computed).** The greedy run first scored 1,072 prompts with the model's default
+output projection, which returns bfloat16 logits for every position. At logit
+magnitudes between 16 and 32, bfloat16 resolves steps of 0.125, so the option
+probabilities depended on which matmul kernel ran: on 40 of these prompts,
+applying the same projection to the final position alone changed probabilities
+by up to 0.031. The projection is now applied to the final position only, in
+float32; final-position and all-position float32 projections then agree to
+within 1.0e-5. On the same 40 prompts, float32 and bfloat16 probabilities
+differed by 0.0086 on average (maximum 0.019), and the modal option changed for
+one prompt. The run was restarted from the first profile. The 1,072 bfloat16
+records are kept outside the repository for this comparison and are not used in
+reported analyses. Two changes that leave the arithmetic unchanged were made at
+the same time: a cap on MLX's buffer cache, and scoring each distinct prompt once
+per profile (the first A0-B1 prompt is identical to the A0-B0 prompt for A421).

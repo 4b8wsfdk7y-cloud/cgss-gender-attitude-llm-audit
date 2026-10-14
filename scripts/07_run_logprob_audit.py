@@ -56,6 +56,9 @@ def parse_args() -> argparse.Namespace:
                         help="check the first N cached scores against full forward passes")
     parser.add_argument("--tolerance", type=float, default=0.05,
                         help="maximum allowed probability gap in the cache check")
+    parser.add_argument("--cache-limit-gb", type=float, default=2.0,
+                        help="upper bound on MLX's pool of freed GPU buffers; without it "
+                             "the pool grows until other applications are swapped out")
     return parser.parse_args()
 
 
@@ -120,6 +123,16 @@ class OptionScorer:
         self.checkpoint_tokens: list[int] = []
         self.cache: list[Any] | None = None
         self.cache_tokens: list[int] = []
+        # The output projection is applied to the final position only, in float32.
+        # The default bfloat16 logits resolve steps of 0.125 at typical magnitudes,
+        # enough to move option probabilities by about 0.03 depending on which
+        # matmul kernel runs; float32 removes that dependence.
+        text_model = getattr(self.model, "language_model", self.model)
+        self.backbone = text_model.model
+        if getattr(text_model.args, "tie_word_embeddings", False):
+            self.head = text_model.model.embed_tokens.as_linear
+        else:
+            self.head = text_model.lm_head
 
     def render(self, messages: list[dict[str, str]], prefix: str) -> str:
         try:
@@ -160,12 +173,15 @@ class OptionScorer:
         else:
             self.cache = make_prompt_cache(self.model)
             delta = tokens
-        logits = self.model(mx.array(delta)[None], cache=self.cache)[0, -1]
+        logits = self._project(self.backbone(mx.array(delta)[None], cache=self.cache))
         self.cache_tokens = list(tokens)
         return logits
 
     def full_logits(self, tokens: list[int]) -> Any:
-        return self.model(mx.array(tokens)[None])[0, -1]
+        return self._project(self.backbone(mx.array(tokens)[None]))
+
+    def _project(self, hidden: Any) -> Any:
+        return self.head(hidden[:, -1:, :].astype(mx.float32))[0, -1]
 
     def score(self, tokens: list[int], use_cache: bool = True) -> dict[str, Any]:
         raw = self._logits(tokens) if use_cache else self.full_logits(tokens)
@@ -204,16 +220,27 @@ def choose_history_answer(
     return rng.choices(options, weights=[distribution[o] for o in options], k=1)[0]
 
 
-def completed_keys(path: Path) -> set[tuple[str, str, str, int, str]]:
-    keys: set[tuple[str, str, str, int, str]] = set()
+def completed_records(
+    path: Path,
+) -> dict[tuple[str, str, str, int, str], dict[int, float]]:
+    """Distributions already in the ledger, keyed by profile, cell, mode, path, item.
+
+    History cells rebuild their earlier answers from these distributions, so a
+    resumed run does not score finished prompts again. A final line cut off by
+    an interrupted write is removed before new records are appended.
+    """
+    records: dict[tuple[str, str, str, int, str], dict[int, float]] = {}
     if not path.exists():
-        return keys
-    with path.open(encoding="utf-8") as handle:
-        for line in handle:
-            row = json.loads(line)
-            keys.add((row["profile_id"], row["cell"], row["history_mode"],
-                      row["path"], row["item"]))
-    return keys
+        return records
+    raw = path.read_bytes()
+    if raw and not raw.endswith(b"\n"):
+        raw = raw[: raw.rfind(b"\n") + 1]
+        path.write_bytes(raw)
+    for line in raw.decode("utf-8").splitlines():
+        row = json.loads(line)
+        key = (row["profile_id"], row["cell"], row["history_mode"], row["path"], row["item"])
+        records[key] = {int(k): v for k, v in row["probabilities"].items()}
+    return records
 
 
 def main() -> int:
@@ -230,6 +257,10 @@ def main() -> int:
     paths = args.paths if args.history == "sampled" else 1
 
     scorer = OptionScorer(model_dir)
+    # Neither limit changes the arithmetic. Wiring keeps the weights resident;
+    # the cache limit stops freed buffers from accumulating across prompts.
+    mx.set_wired_limit(mx.device_info()["max_recommended_working_set_size"])
+    mx.set_cache_limit(int(args.cache_limit_gb * 2**30))
     metadata = {
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "model_dir": str(model_dir),
@@ -239,6 +270,7 @@ def main() -> int:
             sha256_file(model_dir / "chat_template.jinja")
             if (model_dir / "chat_template.jinja").exists() else None
         ),
+        "mlx_version": mx.__version__,
         "mlx_lm_version": mlx_lm.__version__,
         "code_commit": git_commit(),
         "cells": [cell.name for cell in cells],
@@ -247,14 +279,25 @@ def main() -> int:
         "seed": args.seed,
         "profiles": len(profiles),
         "option_token_ids": scorer.option_ids,
-        "scoring": "prefix-cached" if args.cache else "single full forward pass per prompt",
+        "scoring": (
+            "prefix-cached" if args.cache else
+            "single full forward pass per prompt; output projection for the final "
+            "position in float32; identical prompts within a profile are scored once"
+        ),
     }
-    (output_dir / f"run_metadata_{args.history}.json").write_text(
-        json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
     ledger = output_dir / f"option_probabilities_{args.history}.jsonl"
-    done = completed_keys(ledger)
+    done = completed_records(ledger)
+    metadata["records_at_start"] = len(done)
+    # The first session's metadata is kept; every session, including the first,
+    # is appended to the session log.
+    metadata_path = output_dir / f"run_metadata_{args.history}.json"
+    if not metadata_path.exists():
+        metadata_path.write_text(
+            json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+    with (output_dir / f"run_sessions_{args.history}.jsonl").open("a", encoding="utf-8") as log:
+        log.write(json.dumps(metadata, ensure_ascii=False) + "\n")
+
     started = time.perf_counter()
     scored = 0
     verified = 0
@@ -263,6 +306,12 @@ def main() -> int:
     mode_flips = 0
     with ledger.open("a", encoding="utf-8") as out:
         for profile in profiles:
+            if all((profile["profile_id"], cell.name, args.history, path, item) in done
+                   for cell in cells for path in range(paths) for item in items):
+                continue
+            # Full forward passes are deterministic, so a prompt that recurs within
+            # a profile (A0-B1's first item is A0-B0's A421) is scored once.
+            memo: dict[str, dict[str, Any]] = {}
             if args.cache:
                 probes = [
                     scorer.tokens(scorer.render(*build_prompt(
@@ -281,14 +330,22 @@ def main() -> int:
                     for index, item in enumerate(items):
                         history = list(answers) if cell.history else []
                         key = (profile["profile_id"], cell.name, args.history, path, item)
-                        if key in done and not cell.history:
+                        if key in done:
+                            answers.append(
+                                choose_history_answer(done[key], args.history, rng)
+                            )
                             continue
                         messages, prefix = build_prompt(
                             profile["persona"], index, cell, history=history
                         )
                         text = scorer.render(messages, prefix)
-                        tokens = scorer.tokens(text)
-                        result = scorer.score(tokens, use_cache=args.cache)
+                        prompt_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+                        if prompt_sha256 in memo and not args.cache:
+                            result = memo[prompt_sha256]
+                        else:
+                            tokens = scorer.tokens(text)
+                            result = scorer.score(tokens, use_cache=args.cache)
+                            memo[prompt_sha256] = result
                         if args.cache and verified < args.verify:
                             reference = scorer.score(tokens, use_cache=False)
                             gap = max(
@@ -314,8 +371,6 @@ def main() -> int:
                                       f"modal-option changes {mode_flips}", flush=True)
                         distribution = result["distribution"]
                         answers.append(choose_history_answer(distribution, args.history, rng))
-                        if key in done:
-                            continue
                         record = {
                             "profile_id": profile["profile_id"],
                             "wave": profile["wave"],
@@ -330,7 +385,7 @@ def main() -> int:
                             "top_token": result["top_token"],
                             "top_token_prob": result["top_token_prob"],
                             "prompt_tokens": result["prompt_tokens"],
-                            "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                            "prompt_sha256": prompt_sha256,
                         }
                         out.write(json.dumps(record, ensure_ascii=False) + "\n")
                         out.flush()
