@@ -404,7 +404,7 @@ survey-llm-eval/
 |---|---|---|
 | `output/metrics_*.csv` | aggregate validation diagnostics | Yes |
 | `output/figures/` | aggregate comparison figures | Yes |
-| `paper/` | manuscripts, supplement, bibliography, final PDFs | Yes |
+| `paper/` | current manuscripts, bibliography, final PDFs | Yes |
 | `data/profiles_pilot.csv` | sampled profiles with held-out responses | No |
 | `data/profiles_llm_input.csv` | model-facing derived profiles | No |
 | `output/responses*.jsonl` | immutable profile-linked model logs | No |
@@ -418,9 +418,9 @@ survey-llm-eval/
 - [`presentation/ppe-forum-presentation.pdf`](presentation/ppe-forum-presentation.pdf)
   — Qwen3.5-9B PPE forum presentation
 
-The earlier `main_submission` and `online_supplement` files report the legacy
-Qwen3-8B run and are retained only as a versioned research trail. They should
-not be read as supplements to the current Qwen3.5-9B showcase manuscript.
+Earlier manuscript versions based on the legacy Qwen3-8B run are kept outside
+this public repository. The Qwen3.5-9B showcase manuscript is the current
+reference version.
 
 ## Data and reproducibility boundary
 
