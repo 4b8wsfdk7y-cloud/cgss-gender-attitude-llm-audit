@@ -11,5 +11,7 @@
   "bootstrap_replicates": 2000,
   "bootstrap_seed": 20261013,
   "bootstrap": "profiles resampled with replacement within wave; all cells and items move together",
-  "interaction_definition": "differences of simple effects, not halved"
+  "interaction_definition": "differences of simple effects, not halved",
+  "exploratory_ledger_sha256": "4baa65295d58d3c2136e3d0067650f08509e62801c861ef15d23700983b5bb65",
+  "exploratory_records": 1500
 }
