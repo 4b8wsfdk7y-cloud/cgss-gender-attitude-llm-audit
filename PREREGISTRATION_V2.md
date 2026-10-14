@@ -87,3 +87,38 @@ records are kept outside the repository for this comparison and are not used in
 reported analyses. Two changes that leave the arithmetic unchanged were made at
 the same time: a cap on MLX's buffer cache, and scoring each distinct prompt once
 per profile (the first A0-B1 prompt is identical to the A0-B0 prompt for A421).
+
+**2026-10-14, after the Part 1–2 results were computed: one correction and
+three additions.**
+
+1. *Correction.* Part 1 described cell A1-B1-C1 as corresponding to the v1
+   joint condition. It shares that condition's battery visibility, answer
+   order, and JSON output, but v1 also required a verbal label before each
+   score (`{"A421":{"label":"完全不同意","score":1}}`). The two runs also differ
+   in decoding (v1 sampled at temperature 0.7 with top-p 0.9; v2 reads the
+   untempered distribution), in answer history (v1 histories were the model's
+   own sampled answers; the primary v2 run uses modal answers), and possibly in
+   weights (LM Studio `qwen/qwen3.5-9b` versus the MLX 4-bit conversion). The
+   comparison with the v1 values of 68.2% and 0.265 is therefore reported as
+   descriptive, not as a validation check.
+2. *Exploratory cell A1-B1-C2,* specified here before it was run. It is the
+   A1-B1 prompt with the v1 answer format: a verbal label, then the score. The
+   option distribution is the distribution over the five labels, each scored
+   as the sum of its token log-probabilities in one full forward pass. The
+   closing quote is excluded because the tokenizer merges it with the
+   following comma; the five label token sequences are checked to be
+   prefix-free. Modal labels form the answer history. The cell is analysed
+   with the Part 1 metrics and the Part 2 primary outcome, and compared with
+   A1-B1-C1 using the same profile-cluster bootstrap. It does not enter the
+   factorial effects.
+3. *Exploratory comparator,* added after the Part 2 results: the primary
+   outcome computed from the out-of-fold expected scores of the v1 histogram
+   gradient boosting models for the same matched profiles. The weighted CGSS
+   correlation is a response-level quantity and is not on the same scale as a
+   correlation between profile-level expected scores.
+4. *Definition used for interactions,* fixed in the analysis code before it
+   was first run: a two-way interaction is a difference of simple effects
+   averaged over the third factor (for example, the effect of A at B = 1 minus
+   the effect of A at B = 0), and the three-way interaction is the difference
+   between the A × B contrasts at C = 1 and at C = 0. The contrasts are not
+   halved.

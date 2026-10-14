@@ -7,7 +7,8 @@ next-token distribution after the assistant prefix. The probabilities of the
 tokens "1" to "5" are renormalized over the scale. No text is sampled, so the
 main run is deterministic. Cells with answer history use the most probable
 earlier answers (``--history greedy``) or seeded draws from the earlier
-distributions (``--history sampled``) as context.
+distributions (``--history sampled``) as context. The exploratory label cell
+(C2) scores each of the five verbal labels as a token sequence.
 
 Outputs are profile-linked and must stay outside the public repository.
 """
@@ -30,7 +31,13 @@ import mlx_lm
 from mlx_lm import load
 from mlx_lm.models.cache import make_prompt_cache
 
-from survey_llm_eval.factorial import CELLS, build_prompt, cell_from_name, item_ids
+from survey_llm_eval.factorial import (
+    CELLS,
+    build_prompt,
+    cell_from_name,
+    item_ids,
+    label_continuations,
+)
 from survey_llm_eval.probabilities import modal_option, normalize_option_logprobs
 
 SCALE = (1, 2, 3, 4, 5)
@@ -202,6 +209,44 @@ class OptionScorer:
             "prompt_tokens": len(tokens),
         }
 
+    def score_labels(self, text: str) -> dict[str, Any]:
+        """Distribution over the five verbal labels after a C2 prefix.
+
+        Each label's log-probability is the sum over its tokens, from one full
+        forward pass per label. The label token sequences must be prefix-free
+        for the five probabilities to be mutually exclusive.
+        """
+        base = self.tokens(text)
+        fulls = {option: self.tokens(text + label) for option, label in label_continuations()}
+        if any(full[: len(base)] != base for full in fulls.values()):
+            raise RuntimeError("A label continuation changes the prompt tokenization")
+        tails = {option: full[len(base):] for option, full in fulls.items()}
+        if any(a != b and tails[b][: len(tails[a])] == tails[a] for a in tails for b in tails):
+            raise RuntimeError("Label token sequences are not prefix-free")
+        label_logprobs: dict[int, float] = {}
+        top_token, top_prob = "", 0.0
+        for option, full in fulls.items():
+            hidden = self.backbone(mx.array(full)[None])
+            logits = self.head(hidden[:, len(base) - 1 : len(full) - 1, :].astype(mx.float32))[0]
+            logprobs = logits - mx.logsumexp(logits, axis=-1, keepdims=True)
+            targets = mx.array(full[len(base):])[:, None]
+            total = mx.take_along_axis(logprobs, targets, axis=-1).sum()
+            mx.eval(total, logprobs)
+            label_logprobs[option] = float(total.item())
+            if option == 1:
+                top = int(mx.argmax(logprobs[0]).item())
+                top_token = self.tokenizer.decode([top])
+                top_prob = float(mx.exp(logprobs[0, top]).item())
+        distribution, mass = normalize_option_logprobs(label_logprobs)
+        return {
+            "distribution": distribution,
+            "valid_option_mass": mass,
+            "top_token": top_token,
+            "top_token_prob": top_prob,
+            "prompt_tokens": len(base),
+            "label_logprobs": label_logprobs,
+        }
+
 
 def common_prefix(sequences: list[list[int]]) -> list[int]:
     shortest = min(sequences, key=len)
@@ -253,6 +298,8 @@ def main() -> int:
     model_dir = Path(args.model).expanduser()
     profiles = load_profiles(Path(args.profiles).expanduser(), args.limit)
     cells = [cell_from_name(name) for name in args.cells]
+    if args.cache and any(cell.labels for cell in cells):
+        raise SystemExit("Label cells are scored with full forward passes only")
     items = item_ids()
     paths = args.paths if args.history == "sampled" else 1
 
@@ -283,6 +330,9 @@ def main() -> int:
             "prefix-cached" if args.cache else
             "single full forward pass per prompt; output projection for the final "
             "position in float32; identical prompts within a profile are scored once"
+            + ("; label cells: summed log-probabilities of the label tokens, one full "
+               "forward pass per label"
+               if any(cell.labels for cell in cells) else "")
         ),
     }
     ledger = output_dir / f"option_probabilities_{args.history}.jsonl"
@@ -342,6 +392,9 @@ def main() -> int:
                         prompt_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
                         if prompt_sha256 in memo and not args.cache:
                             result = memo[prompt_sha256]
+                        elif cell.labels:
+                            result = scorer.score_labels(text)
+                            memo[prompt_sha256] = result
                         else:
                             tokens = scorer.tokens(text)
                             result = scorer.score(tokens, use_cache=args.cache)
@@ -387,6 +440,10 @@ def main() -> int:
                             "prompt_tokens": result["prompt_tokens"],
                             "prompt_sha256": prompt_sha256,
                         }
+                        if "label_logprobs" in result:
+                            record["label_logprobs"] = {
+                                str(k): v for k, v in result["label_logprobs"].items()
+                            }
                         out.write(json.dumps(record, ensure_ascii=False) + "\n")
                         out.flush()
                         scored += 1

@@ -1,6 +1,13 @@
 import unittest
 
-from survey_llm_eval.factorial import CELLS, build_prompt, cell_from_name
+from survey_llm_eval.factorial import (
+    CELLS,
+    EXPLORATORY_CELLS,
+    Cell,
+    build_prompt,
+    cell_from_name,
+    label_continuations,
+)
 
 PERSONA = "调查年份：2018年；性别：女；年龄：45岁。"
 
@@ -56,6 +63,32 @@ class FactorialPromptTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             build_prompt(PERSONA, 2, cell_from_name("A0-B0-C0"), history=[4, 2])
 
+
+    def test_label_cell_is_exploratory(self) -> None:
+        cell = cell_from_name("A1-B1-C2")
+        self.assertTrue(cell.labels)
+        self.assertNotIn(cell, CELLS)
+        self.assertEqual(EXPLORATORY_CELLS, (cell,))
+        with self.assertRaises(ValueError):
+            Cell(battery=True, history=True, json_format=False, labels=True)
+
+    def test_label_prefix_carries_labelled_history(self) -> None:
+        messages, prefix = build_prompt(
+            PERSONA, 2, cell_from_name("A1-B1-C2"), history=[4, 2]
+        )
+        self.assertEqual(
+            prefix,
+            '{"A421":{"label":"比较同意","score":4},'
+            '"A422":{"label":"比较不同意","score":2},"A423":{"label":"',
+        )
+        self.assertIn('"label"', user_text(messages))
+        _, first = build_prompt(PERSONA, 0, cell_from_name("A1-B1-C2"))
+        self.assertEqual(first, '{"A421":{"label":"')
+
+    def test_label_continuations(self) -> None:
+        continuations = dict(label_continuations())
+        self.assertEqual(sorted(continuations), [1, 2, 3, 4, 5])
+        self.assertEqual(continuations[3], "无所谓同意不同意")
 
 if __name__ == "__main__":
     unittest.main()
