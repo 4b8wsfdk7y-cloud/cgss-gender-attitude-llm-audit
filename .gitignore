@@ -25,3 +25,7 @@ output/public_demo/
 *.synctex.gz
 *.xdv
 paper/Rplots.pdf
+
+# v2 option-probability ledgers are profile-linked; keep them outside the repo
+output/logprobs/
+*option_probabilities*.jsonl

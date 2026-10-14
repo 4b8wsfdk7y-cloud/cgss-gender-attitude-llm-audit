@@ -76,7 +76,7 @@ def _battery_listing(items: Sequence[tuple[str, str]]) -> str:
 def _single_format(item_id: str, json_format: bool) -> str:
     if json_format:
         return (
-            f'只返回一个JSON对象，例如：{{"{item_id}":1}}。'
+            f'只返回一个JSON对象，例如：{{"{item_id}": 1}}。'
             f"唯一的键必须为{item_id}，值必须为1至5的整数。不要输出任何其他文字。"
         )
     return "只回答一个1至5的整数，不要输出任何其他文字。"
@@ -87,7 +87,7 @@ def _sequential_format(items: Sequence[tuple[str, str]], json_format: bool) -> s
     if json_format:
         return (
             f"只返回一个JSON对象，键依次为{ids}，值必须为1至5的整数，"
-            f'例如：{{"{items[0][0]}":1,...}}。不要输出任何其他文字。'
+            f'例如：{{"{items[0][0]}": 1, ...}}。不要输出任何其他文字。'
         )
     return (
         f"请依次回答{ids}，每行一个1至5的整数，共{len(items)}行。"
@@ -96,7 +96,7 @@ def _sequential_format(items: Sequence[tuple[str, str]], json_format: bool) -> s
 
 
 def _answer_text(item_id: str, answer: int, json_format: bool) -> str:
-    return f'{{"{item_id}":{answer}}}' if json_format else str(answer)
+    return f'{{"{item_id}": {answer}}}' if json_format else str(answer)
 
 
 def build_prompt(
@@ -129,10 +129,10 @@ def build_prompt(
         )
         messages.append({"role": "user", "content": user})
         if cell.json_format:
-            answered = ",".join(
-                f'"{items[i][0]}":{answer}' for i, answer in enumerate(history)
+            answered = ", ".join(
+                f'"{items[i][0]}": {answer}' for i, answer in enumerate(history)
             )
-            prefix = "{" + (answered + "," if answered else "") + f'"{item_id}":'
+            prefix = "{" + (answered + ", " if answered else "") + f'"{item_id}": '
         else:
             prefix = "".join(f"{answer}\n" for answer in history)
         return messages, prefix
@@ -170,7 +170,7 @@ def build_prompt(
 
 
 def _target_prefix(item_id: str, json_format: bool) -> str:
-    return f'{{"{item_id}":' if json_format else ""
+    return f'{{"{item_id}": ' if json_format else ""
 
 
 def item_ids(items: Sequence[tuple[str, str]] = CGSS_ITEMS) -> tuple[str, ...]:

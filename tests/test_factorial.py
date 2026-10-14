@@ -29,7 +29,7 @@ class FactorialPromptTest(unittest.TestCase):
         messages, prefix = build_prompt(
             PERSONA, 2, cell_from_name("A1-B1-C1"), history=[4, 2]
         )
-        self.assertEqual(prefix, '{"A421":4,"A422":2,"A423":')
+        self.assertEqual(prefix, '{"A421": 4, "A422": 2, "A423": ')
         self.assertEqual(len(messages), 2)
 
     def test_joint_digit_prefix(self) -> None:
@@ -48,7 +48,7 @@ class FactorialPromptTest(unittest.TestCase):
 
     def test_first_item_needs_no_history(self) -> None:
         _, prefix = build_prompt(PERSONA, 0, cell_from_name("A1-B1-C1"))
-        self.assertEqual(prefix, '{"A421":')
+        self.assertEqual(prefix, '{"A421": ')
 
     def test_history_validation(self) -> None:
         with self.assertRaises(ValueError):
