@@ -17,7 +17,8 @@
 
 [Overview](#overview) · [20-second result](#the-result-in-20-seconds) · [What I built](#what-i-built) ·
 [Architecture](#system-architecture) · [Results](#results-at-a-glance) · [Quick start](#public-quick-start) ·
-[Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts)
+[Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts) ·
+[v2 update](#v2-option-probability-audit-october-2026)
 
 </div>
 
@@ -41,6 +42,12 @@ overall response variance, but 11 of 12 wave-level core diagnostics still fall
 outside the human-sampling reference range. This repository contains the local
 inference pipeline, audit package, public synthetic demo, tests, aggregate
 findings, and accompanying paper.
+
+> **October 2026 update.** A follow-up audit reads the model's full probability
+> distribution over the five response options instead of sampling answers, and
+> uses a preregistered 2×2×2 experiment to separate three presentation choices
+> that the first audit confounded. See
+> [v2: option-probability audit](#v2-option-probability-audit-october-2026).
 
 ## The result in 20 seconds
 
@@ -73,6 +80,7 @@ and evaluation system:
 | Evaluation | Python package plus survey-weighted R analysis | Marginal, subgroup, variance, correlation, stability, and predictive diagnostics |
 | Benchmarking | Human-sampling envelopes, joint-donor and supervised baselines | Separating sparse-profile limits from generator-specific failure |
 | Public release | Synthetic fixture, CLI, tests, CI, documented data boundary | Reproducibility without redistributing licensed microdata |
+| Probability audit (v2) | MLX forward passes, fp32 option probabilities, preregistered factorial design | Reading the model's distribution directly instead of inferring it from samples |
 
 ![Four-stage population-fidelity audit](output/figures/audit_design.png)
 
@@ -223,6 +231,99 @@ in 2018, and independent presentation does not consistently recover the human
 structure. It is evidence about a presentation bundle, not a clean causal
 isolation of shared context.
 
+## v2: option-probability audit (October 2026)
+
+The first audit sampled five answers per profile through a local inference
+server. That design left three questions open: whether the fixed seeds were
+applied, what probability the model actually assigned to each option, and
+whether the extra coherence of the joint prompt came from seeing the other
+items, from the model's own earlier answers, or from the JSON output format.
+v2 is built to answer them.
+
+| | v1 (frozen, August 2026) | v2 (October 2026) |
+|---|---|---|
+| Model | Qwen3.5-9B served through LM Studio | Qwen3.5-9B, 4-bit MLX, local |
+| Response | five sampled answers per profile and item (T = 0.7, top-p = 0.9) | one forward pass; probabilities of options 1–5 at T = 1, renormalized |
+| Reproducibility | seed application could not be verified | full-prompt computation is bit-for-bit identical across runs |
+| Design | joint prompt plus one independent-item run | preregistered 2×2×2 factorial: item block visible (A) × answer history (B) × JSON output (C) |
+| Scale | 300 profiles | 300 profiles × 5 items × 8 cells = 12,000 forward passes |
+
+**Engineering details that changed the numbers**
+
+- The model's default bf16 logits are coarse (step 0.125), and option
+  probabilities moved by up to 0.031 depending on how they were computed. The
+  final-position projection now runs in fp32, where two computation paths
+  differ by at most about 1e-5. The first 1,072 bf16 records were set aside and
+  the run restarted; the preregistration's change log records this.
+- Prefix (KV) caching changed the most probable option for 2 of 80 smoke-test
+  prompts, so every formal prompt is computed in full.
+- A JSON answer prefix without a trailing space let the model put up to 65% of
+  next-token probability on a space token. The prompt was fixed before the
+  formal run.
+- The probability mass on the valid options "1"–"5" averages above 0.999 in
+  every cell.
+
+**Preregistration.** [`PREREGISTRATION_V2.md`](PREREGISTRATION_V2.md) was
+committed on 13 October 2026 (`995b353`), before any CGSS profile was scored.
+The primary estimand is the mean absolute correlation between item A425 and
+the other four items, computed from profile-level expected scores, with 2,000
+profile bootstrap replicates drawn within wave.
+
+**Main results** ([`output/v2/`](output/v2/))
+
+| Effect on A425 mean absolute correlation | Estimate | 95% CI |
+|---|---:|---:|
+| B: answer history in context | +0.379 | [0.339, 0.410] |
+| A: full item block visible | +0.048 | [0.022, 0.074] |
+| C: JSON output | +0.013 | [−0.013, 0.039] |
+| A × C | +0.237 | [0.192, 0.286] |
+| A × B × C | −0.138 | [−0.239, −0.044] |
+
+- The inflated coherence comes mainly from the model seeing its own earlier
+  answers. Cells without answer history range from 0.39 to 0.58 (an
+  exploratory supervised HGB baseline gives 0.45); cells with history range
+  from 0.78 to 0.92. The CGSS response-level value (0.07) is computed on
+  individual answers, not expected scores, and is not directly comparable.
+- Output format has no detectable main effect; its effect depends on whether
+  the item block is visible.
+- In every cell the matched log score (1.97–3.06) is worse than a uniform guess
+  over five options (ln 5 ≈ 1.61): the model is confidently wrong about
+  individual respondents. The best ranked probability score is 0.191
+  (A0-B0-C0), against 0.149 for HGB.
+- Marginal accuracy depends on presentation. The mean absolute error of item
+  means ranges from 0.30 (A0-B0-C0) to 1.06 (A1-B1-C0). The cell closest to the
+  CGSS means has a between-profile variance ratio of 0.09: it gives nearly the
+  same answer to everyone.
+
+**What v2 does not show**
+
+- v2 is not a replication or validation of v1. The designs differ in at least
+  four ways: v1 asked for a verbal label before the number; v1 sampled at
+  T = 0.7 and top-p = 0.9, while v2 reads T = 1 probabilities; v2 conditions on
+  the most probable earlier answers rather than sampled ones; and the model
+  files may differ. The v2 reference cell (A1-B1-C1) corresponds to the v1
+  joint condition only in part.
+- v2 item means are far from v1's. An exploratory verbal-label cell
+  (A1-B1-C2) lowers A425 coherence (0.81 vs. 0.92 in A1-B1-C1) but leaves item
+  means close to A1-B1-C1, so it does not explain the gap. Differences in the
+  v1 call configuration are being checked.
+- Still pending: the sampled-history robustness check (five history paths per
+  profile) and the measurement-model analysis (Part 3 of the preregistration).
+- The results describe one 4-bit local model and do not generalize to other
+  models or quantizations.
+
+**Code.** [`scripts/07_run_logprob_audit.py`](scripts/07_run_logprob_audit.py)
+runs the forward passes and writes an append-only ledger;
+[`scripts/08_export_human_benchmark.R`](scripts/08_export_human_benchmark.R)
+exports the weighted human benchmark;
+[`scripts/09_analyze_logprob_audit.py`](scripts/09_analyze_logprob_audit.py)
+computes the estimands and bootstrap intervals. Probability extraction and the
+factorial prompts live in
+[`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py)
+and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py), with
+tests in `tests/test_probabilities.py` and `tests/test_factorial.py`. Running
+them requires the licensed CGSS-derived files.
+
 ## Public quick start
 
 The public demo requires no CGSS data, model download, or API key. It uses a
@@ -358,7 +459,9 @@ delta_r = mean_abs_correlation_joint - mean_abs_correlation_independent
 A profile-bootstrap interval entirely above zero would support
 context-induced coherence. The realized design contains one independent answer
 but five joint repeats per profile-item, so it does not isolate prompt context
-from decoding variability or model representation.
+from decoding variability or model representation. The v2 factorial design
+separates these factors; see
+[v2: option-probability audit](#v2-option-probability-audit-october-2026).
 
 The extended validation also includes:
 
