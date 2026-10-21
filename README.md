@@ -279,6 +279,8 @@ profile bootstrap replicates drawn within wave.
 | A × C | +0.237 | [0.192, 0.286] |
 | A × B × C | −0.138 | [−0.239, −0.044] |
 
+![Inter-item coherence across the eight v2 conditions](output/figures/v2_coherence_by_cell.png)
+
 - The inflated coherence comes mainly from the model seeing its own earlier
   answers. Cells without answer history range from 0.39 to 0.58 (an
   exploratory supervised HGB baseline gives 0.45); cells with history range
@@ -290,6 +292,9 @@ profile bootstrap replicates drawn within wave.
   over five options (ln 5 ≈ 1.61): the model is confidently wrong about
   individual respondents. The best ranked probability score is 0.191
   (A0-B0-C0), against 0.149 for HGB.
+
+![Matched log score across the eight v2 conditions](output/figures/v2_calibration_by_cell.png)
+
 - Marginal accuracy depends on presentation. The mean absolute error of item
   means ranges from 0.30 (A0-B0-C0) to 1.06 (A1-B1-C0). The cell closest to the
   CGSS means has a between-profile variance ratio of 0.09: it gives nearly the
@@ -317,7 +322,9 @@ runs the forward passes and writes an append-only ledger;
 [`scripts/08_export_human_benchmark.R`](scripts/08_export_human_benchmark.R)
 exports the weighted human benchmark;
 [`scripts/09_analyze_logprob_audit.py`](scripts/09_analyze_logprob_audit.py)
-computes the estimands and bootstrap intervals. Probability extraction and the
+computes the estimands and bootstrap intervals;
+[`scripts/10_plot_v2.R`](scripts/10_plot_v2.R) draws the two figures above from
+the aggregate tables in `output/v2/`. Probability extraction and the
 factorial prompts live in
 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py)
 and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py), with
