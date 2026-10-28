@@ -1,0 +1,3 @@
+context,profiles,v1_draws,v1_sampled_mean,expected_untempered,expected_v1_decoding,mean_loglik_v1_draws,v1_draws_with_zero_probability,corr_with_v1_profile_means
+thinking open,300,1500,2.158,2.400194447549288,2.1265335200464155,-1.5290851997508228,15,0.5388105665020118
+thinking closed,300,1500,2.158,3.133343426427872,3.2562652294079335,-8.301896886117117,395,0.2652212581681202

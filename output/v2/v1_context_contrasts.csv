@@ -1,0 +1,25 @@
+contrast,metric,estimate,ci95_low,ci95_high,interval_excludes_zero
+V1-T1 minus V1-T0,a425_mean_abs_correlation,-0.4697693266842429,-0.5434118419909341,-0.4081426116630013,True
+V1-T1 minus V1-T0,mean_abs_mean_error,0.32045188222941673,,,
+V1-T1 minus V1-T0,mean_total_variation,0.06536469976939874,,,
+V1-T1 minus V1-T0,mean_between_variance_ratio,-0.507446697639665,,,
+V1-T1 minus V1-T0,mean_within_share,0.3249440267208562,,,
+V1-T1 minus V1-T0,mean_matched_rps,0.006126002672347003,,,
+V1-T1 minus V1-T0,mean_matched_log_score,-0.03332133154962125,,,
+V1-T1 minus V1-T0,mean_valid_option_mass,-0.010669592011655182,,,
+V1-T0 minus A1-B1-C1,a425_mean_abs_correlation,-0.010512270240323307,-0.02636323956599328,0.008897857328783577,False
+V1-T0 minus A1-B1-C1,mean_abs_mean_error,-0.5871204310174287,,,
+V1-T0 minus A1-B1-C1,mean_total_variation,-0.1974874262697368,,,
+V1-T0 minus A1-B1-C1,mean_between_variance_ratio,0.23499615427885334,,,
+V1-T0 minus A1-B1-C1,mean_within_share,0.025233312783651263,,,
+V1-T0 minus A1-B1-C1,mean_matched_rps,-0.05295266401705795,,,
+V1-T0 minus A1-B1-C1,mean_matched_log_score,-1.0718320169218056,,,
+V1-T0 minus A1-B1-C1,mean_valid_option_mass,-0.001639048283265887,,,
+V1-T1 minus A1-B1-C1,a425_mean_abs_correlation,-0.48028159692456623,-0.5501568839188452,-0.4188570595922592,True
+V1-T1 minus A1-B1-C1,mean_abs_mean_error,-0.26666854878801194,,,
+V1-T1 minus A1-B1-C1,mean_total_variation,-0.13212272650033807,,,
+V1-T1 minus A1-B1-C1,mean_between_variance_ratio,-0.2724505433608117,,,
+V1-T1 minus A1-B1-C1,mean_within_share,0.35017733950450747,,,
+V1-T1 minus A1-B1-C1,mean_matched_rps,-0.046826661344710946,,,
+V1-T1 minus A1-B1-C1,mean_matched_log_score,-1.1051533484714269,,,
+V1-T1 minus A1-B1-C1,mean_valid_option_mass,-0.01230864029492107,,,

@@ -1,0 +1,15 @@
+{
+  "ledger_sha256": "6940c55829066f9e0bd1edf77638e4f01cd3d3e88c908b52d1d1e49a4be6c4d8",
+  "reference_records": 1500,
+  "v1_context_ledger_sha256": "38aa9c6bd302edf436ec2b31cfcb0e1db1f373ca98f67ae0994f1b7402e66039",
+  "v1_context_records": 3000,
+  "profiles": 300,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled with replacement within wave; all cells and items move together",
+  "v1_decoding": {
+    "temperature": 0.7,
+    "top_p": 0.9
+  },
+  "diagnostic_sha256": "48975924b4b47bca1fdd03ea3e71ae4bb28a8ab5bbae44d10868eaafe8e3adcb"
+}
