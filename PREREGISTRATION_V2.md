@@ -245,3 +245,50 @@ are recorded as missing; the very large discriminations estimated for
 near-deterministic populations are reported but not interpreted. The human
 population has 31,177 respondents with all five items, against 31,856 in the
 per-item benchmark.
+
+**2026-10-28, sampled-history robustness check: implementation and analysis,
+fixed before the run.** The original specification names five seeded draws
+and a response-level outcome. The details below were fixed before any
+sampled-history probabilities were computed for analysis. A smoke test on
+three profiles (one per wave, cell A1-B1-C1) checked the code path: first-item
+probabilities equal the primary run's, and every history is reproduced by
+replaying the seeded draws. Its outputs are not analysed.
+
+1. *Runs.* The four cells with history (A0-B1-C0, A0-B1-C1, A1-B1-C0,
+   A1-B1-C1), all 300 profiles, five paths per profile, thinking disabled,
+   using `scripts/07_run_logprob_audit.py --history sampled --paths 5` with
+   seed 20261013 (the mode has been in the script since the original
+   specification). On each path, the answer to each item is drawn from that
+   item's renormalized option distribution by a generator seeded with the
+   seed, profile, cell, and path, and it enters the history of the next item;
+   the A425 answer is drawn the same way. Prompts that recur within a profile
+   are scored once. The first item of every path has no history and is the
+   primary run's prompt.
+2. *Cells without history.* Their prompts do not depend on history, so no new
+   forward passes are made. Their response-level answers are drawn from the
+   primary distributions with the same seeding scheme, one draw per item in
+   order.
+3. *R1, response-level outcome.* For each cell, path, and wave, the mean
+   absolute Pearson correlation between the drawn A425 answers and the drawn
+   A421–A424 answers across the 100 profiles, averaged over paths and then
+   over waves. A correlation involving an item that is constant in a wave is
+   undefined; it is left out of the average, and the number of such cases is
+   reported. Factorial effects are computed from these values as in Part 2.
+   Three response-level values are reported descriptively for comparison: the
+   weighted CGSS value (0.069), the v1 human-sampling envelope for samples of
+   100 per wave (95% upper bounds 0.198–0.234), and v1 (0.270; 0.232–0.335 by
+   wave), which differs in its thinking context and prompt.
+4. *R2, expected scores under sampled histories.* For each history cell and
+   path, the primary outcome computed from the expected scores conditional on
+   that path's history, averaged over the five paths. Reported: the value for
+   each history cell, its difference from the modal-history value, and the
+   factorial effects with the history cells replaced by their sampled-history
+   values (cells without history unchanged).
+5. *Inference.* The Part 2 profile-cluster bootstrap: 2,000 replicates within
+   wave, seed 20261013; each resampled profile carries all its paths, items,
+   and cells.
+6. *Secondary, descriptive.* By cell, the mean absolute error of item means
+   against CGSS and the between-profile variance ratio, computed from each
+   profile's option distribution averaged over its five paths.
+7. *Output.* Aggregate tables only, in `output/v2/robustness_*.csv`, written
+   by `scripts/14_analyze_sampled_history.py`.
