@@ -41,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-Large language models are increasingly used to simulate survey respondents, yet matching a plausible individual answer is not equivalent to recovering a population. This paper evaluates whether a locally deployed Qwen3.5-9B model can reproduce the marginal distributions, heterogeneity, and item structure of five gender-attitude questions in the Chinese General Social Survey (CGSS) 2012, 2018, and 2021. The design pairs 300 real respondent profiles with repeated zero-shot responses and compares them with matched human answers, the full weighted survey benchmark, and survey-trained machine-learning models using the same prediction-time attributes. Qwen3.5-9B produces large item-specific mean errors. Its mean marginal variance ratio is 0.794, but 68.2\% of predictive variance comes from repeated draws within the same profile; the between-profile ratio is only 0.265. A joint five-item prompt also strengthens the housework item's association with the other attitudes. Stateless single-item calls reduce mean absolute correlation by 0.130 (profile-bootstrap 95\% interval: 0.050 to 0.178), although the effect is concentrated in 2018 and independent presentation does not consistently recover the human structure. Histogram gradient boosting remains imperfect for individuals but reduces ordinal MAE from 1.175 to 0.921 and total variation from 0.282 to 0.071. Sparse profiles are therefore a real information limit, but not a sufficient explanation for this model's population distortion.
+Large language models are increasingly used to simulate survey respondents, yet matching a plausible individual answer is not equivalent to recovering a population. This paper evaluates whether a locally deployed Qwen3.5-9B model can reproduce the marginal distributions, heterogeneity, and item structure of five gender-attitude questions in the Chinese General Social Survey (CGSS) 2012, 2018, and 2021. The design pairs 300 real respondent profiles with repeated zero-shot responses and compares them with matched human answers, the full weighted survey benchmark, and survey-trained machine-learning models using the same prediction-time attributes. Qwen3.5-9B produces large item-specific mean errors. Its mean marginal variance ratio is 0.794, but 68.2\% of predictive variance comes from repeated draws within the same profile; the between-profile ratio is only 0.265. A joint five-item prompt also strengthens the housework item's association with the other attitudes. Stateless single-item calls reduce mean absolute correlation by 0.130 (profile-bootstrap 95\% interval: 0.050 to 0.178), although the effect is concentrated in 2018 and independent presentation does not consistently recover the human structure. Histogram gradient boosting remains imperfect for individuals but reduces ordinal MAE from 1.175 to 0.921 and total variation from 0.282 to 0.071. Sparse profiles are therefore a real information limit, but not a sufficient explanation for this model's population distortion. A follow-up audit reads the model's option probabilities directly. In a preregistered factorial experiment, keeping the model's earlier answers in context raises the housework item's mean absolute correlation with the other items by 0.379 (95\% interval: 0.339 to 0.410), while the main effects of item visibility and output format are small. The follow-up also found that the first audit's answers were generated inside the model's reasoning block; under the first-audit prompt, closing that block roughly doubles this coherence. In ordinal factor models, the housework item loads 0.16 on the common factor among CGSS respondents and 0.39 to 0.55 in the first-audit answers.
 \end{abstract}
 
 \noindent\textbf{Keywords:} synthetic respondents; large language models; machine learning; public opinion; gender attitudes; China
@@ -111,6 +111,7 @@ The full weighted survey provides two reference facts. First, A421--A424 share a
 \section{Computational Audit Design}
 
 \subsection{Profile sampling and LLM generation}
+\label{sec:generation}
 
 I draw 100 respondents from each wave. Sampling is stratified by sex, education group, and urban residence; allocations follow each stratum's weighted population share, and respondents are selected within strata with probabilities proportional to the CGSS weight. The resulting 300 profiles contain the same profile fields supplied to the supervised models. Human outcomes are withheld from the model-facing file.
 
@@ -119,6 +120,8 @@ The audit uses the open-weight Qwen3.5-9B model \citep{qwen2026modelcard}, execu
 The primary \texttt{neutral\_verbal} condition is called five times for each of the 300 profiles, producing an empirical five-category distribution from 1,500 joint responses. The evaluation script rejects malformed JSON, missing keys, out-of-range scores, and verbal labels inconsistent with their numeric values. A first-draw analysis is retained as a sensitivity check, while the main analysis uses all five draws and decomposes their variance into between-profile and within-profile components.
 
 The context experiment adds 1,500 stateless calls. For each profile, A421--A425 are presented separately in five new requests. Every request repeats the same persona and response scale but contains no conversation history, no other item, and no prior answer. The model, persona information, scale, and decoding settings are unchanged. The design varies shared context while necessarily shortening the structured-output schema from five item keys to one; this remaining format difference bounds the mechanism claim.
+
+\paragraph{Correction (October 2026).} A later check of the call path, using the runner, the response files, and the LM Studio server logs, found two features of these calls that the description above omits (Section~\ref{sec:v2}). First, each request carried an integer-only response schema, so the model returned integer JSON without the verbal labels the prompt asked for, and the label-consistency check never applied. Second, LM Studio rendered Qwen3.5's chat template with thinking enabled, its default for this model, and the template does not recognise the \texttt{/no\_think} line in the user message. Every answer, in the joint and in the stateless calls, was therefore generated inside an open reasoning block and returned in the \texttt{reasoning\_content} field, which the runner read when \texttt{content} was empty. The results in Section~\ref{sec:results} describe that configuration.
 
 \subsection{Survey-trained reference models}
 
@@ -243,6 +246,7 @@ Uncertainty for the matched HGB--LLM error difference also comes from a profile-
 Finally, I draw 100 human respondents from each wave 1,000 times using the audit's original strata, allocation rule, and survey weights. The central 95\% interval defines a task-specific sampling reference envelope. It is neither a confidence interval for the finite-population parameter nor a universal deployment threshold; it asks whether a 100-profile synthetic sample falls within the variation normally produced by a human sample of the same size under this design.
 
 \section{Results}
+\label{sec:results}
 
 \subsection{The model misses item-specific opinion}
 
@@ -388,6 +392,122 @@ Histogram gradient boosting & \textbf{0.942} & \textbf{0.150} & \textbf{0.107} &
 
 On the 100 matched 2021 profiles, the historical references are compared with Qwen3.5-9B without allowing them to observe 2021 outcomes. This comparison still does not equalize training information---the references see historical CGSS labels---but it tests whether the LLM's 2021 fit is solely an artifact of allowing reference models to observe the target year's answers.
 
+\section{Follow-up Audit with Option Probabilities}
+\label{sec:v2}
+
+\subsection{Design}
+
+The follow-up audit replaces sampled answers with the model's probabilities for the five response options. The same Qwen3.5-9B weights are run locally through MLX. For each profile, item, and condition, one forward pass returns the next-token distribution after the assistant prefix, and the probabilities of the tokens \texttt{1}--\texttt{5} are renormalised over the scale; the mass on these tokens averages above 0.999. The output projection is applied in single precision to the final position only, because the default half-precision logits moved option probabilities by up to 0.031 depending on the computation path. Full-prompt computation is identical across runs.
+
+A preregistered $2\times2\times2$ experiment separates three features that the first audit bundled: whether the full item block is visible (A), whether the model's earlier answers remain in context (B), and whether the answer is a bare integer or JSON (C). Cells with history use the most probable earlier answers. The preregistration was committed before any CGSS profile was scored, and later changes are dated in its change log. The primary outcome is the mean absolute correlation between the expected score on A425 and the expected scores on A421--A424, computed across profiles within wave and averaged over waves, with a profile-cluster bootstrap of 2,000 replicates. The design has 12,000 forward passes.
+
+\subsection{Answer history drives synthetic coherence}
+
+\begin{table}[H]
+\centering
+\caption{Factorial effects on A425 coherence (mean absolute correlation of expected scores)}
+\label{tab:v2effects}
+\small
+\begin{tabular}{lrr}
+\toprule
+Effect & Estimate & 95\% interval \\
+\midrule
+A: item block visible & 0.048 & [0.022, 0.074] \\
+B: answer history in context & 0.379 & [0.339, 0.410] \\
+C: JSON output & 0.013 & [$-0.013$, 0.039] \\
+A $\times$ B & 0.024 & [$-0.034$, 0.079] \\
+A $\times$ C & 0.237 & [0.192, 0.286] \\
+B $\times$ C & $-0.035$ & [$-0.091$, 0.019] \\
+A $\times$ B $\times$ C & $-0.138$ & [$-0.239$, $-0.044$] \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Interactions are differences of simple effects, not halved.
+\end{tablenotes}
+\end{table}
+
+Answer history is the dominant source of coherence (\cref{tab:v2effects}). The four cells without history range from 0.39 to 0.58, close to the 0.45 obtained from the out-of-fold expected scores of the survey-trained gradient boosting model; the four cells with history range from 0.78 to 0.92. Output format has no detectable main effect, but its effect reverses with item visibility: JSON lowers coherence when only the target item is shown and raises it when the block is visible. The CGSS value of 0.069 is a response-level correlation and is not on the same scale as correlations between profile-level expected scores.
+
+Marginal accuracy is sensitive to presentation. The mean absolute error of item means ranges from 0.30 (A0-B0-C0) to 1.06 (A1-B1-C0). The most accurate cell has a between-profile variance ratio of 0.09, so it gives nearly the same distribution to every profile. Calibration against matched respondents is poor in every cell: the mean log score lies between 1.97 and 3.06, worse than a uniform guess over five options ($\ln 5 \approx 1.61$), and the best ranked probability score, 0.191, compares with 0.149 for gradient boosting.
+
+\subsection{The thinking context of the first audit}
+
+Item means in the reference cell A1-B1-C1 were far from the first audit's (A421: 4.42 against 2.16), and an exploratory cell that restored a verbal label before each score lowered coherence (0.81 against 0.92) without moving the means. The correction in Section~\ref{sec:generation} suggested another source. A diagnostic scored A421 for the 300 first-audit prompts twice, once with the reasoning block open, as in the first audit, and once closed, as in the follow-up, holding everything else fixed.
+
+\begin{table}[H]
+\centering
+\caption{A421 under the first-audit prompt with the reasoning block open or closed}
+\label{tab:think}
+\small
+\begin{tabular}{lrr}
+\toprule
+ & Open (first audit) & Closed (follow-up) \\
+\midrule
+Expected score after first-audit decoding ($T=0.7$, top-$p$ 0.9) & 2.13 & 3.26 \\
+Mean log-likelihood of the 1,500 first-audit answers & $-1.53$ & $-8.30$ \\
+First-audit answers with zero probability & 15 & 395 \\
+Correlation with first-audit profile means & 0.54 & 0.27 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item The first-audit sampled mean of A421 is 2.16.
+\end{tablenotes}
+\end{table}
+
+Two exploratory cells extend the comparison to all five items. They were specified in the preregistration after the diagnostic and before they were run. Both use the first-audit system and user prompts and condition on the most probable earlier answers; V1-T1 leaves the reasoning block open and V1-T0 closes it (\cref{tab:v1cells}).
+
+\begin{table}[H]
+\centering
+\caption{The first-audit prompt with the reasoning block open or closed, five items}
+\label{tab:v1cells}
+\small
+\begin{tabular}{lrrr}
+\toprule
+ & V1-T1 (open) & V1-T0 (closed) & A1-B1-C1 \\
+\midrule
+A425 mean $|r|$ & 0.44 & 0.91 & 0.92 \\
+\quad 95\% interval & [0.37, 0.50] & [0.90, 0.92] & [0.90, 0.93] \\
+Mean absolute gap from first-audit item means & 0.23 & 0.62 & 1.47 \\
+Mean absolute error against CGSS item means & 0.68 & 0.36 & 0.95 \\
+Between-profile variance ratio & 0.14 & 0.65 & 0.41 \\
+Matched log score & 1.96 & 1.99 & 3.06 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item The gap from first-audit means applies the first-audit decoding ($T=0.7$, top-$p$ 0.9) to the option probabilities; the other rows use the probabilities at $T=1$.
+\end{tablenotes}
+\end{table}
+
+Closing the reasoning block raises A425 coherence by 0.47 (95\% interval 0.41 to 0.54). With the block closed, the first-audit prompt cannot be distinguished from A1-B1-C1 on this outcome (difference $-0.01$, interval $-0.03$ to 0.01). The remaining differences between the two prompts, the system message and the wording, move the item means instead: with the block closed, the first-audit prompt is closer to the CGSS means than A1-B1-C1. The open block comes closest to the first-audit means. A421 and A425 are within 0.11 of them, while A422--A424 are 0.25 to 0.45 lower; the cells condition on the most probable earlier answers, whereas the first audit sampled them, so the procedures are not identical.
+
+The factorial effects in \cref{tab:v2effects} were all estimated with the reasoning block closed, and the design did not cross the reasoning context with A, B, and C. It therefore does not show how large the history effect is when the block is open. V1-T1 keeps the history in context and reaches 0.44, close to the 0.45 of the gradient boosting model. Like the other values in this section, it is computed from expected scores and is not on the scale of the first audit's 0.23 to 0.34, which was computed from sampled answers.
+
+\subsection{Measurement models}
+
+One-factor ordinal models (weighted least squares with mean- and variance-adjusted tests) were estimated for CGSS and for three synthetic populations: the most probable answers in A1-B1-C1 and in A0-B0-C0, and the first-audit sampled answers as five replicate data sets of 300 profiles. All items are coded so that higher values are more egalitarian.
+
+\begin{table}[H]
+\centering
+\caption{Standardised loading of A425 in the one-factor model}
+\label{tab:cfa}
+\small
+\begin{tabular}{lrrrl}
+\toprule
+Population & $n$ & A425 & Other items & Solution \\
+\midrule
+CGSS, weighted & 31,177 & 0.16 & 0.55--0.77 & proper \\
+First-audit answers (5 replicates) & 300 & 0.39--0.55 & 0.66--0.92 & proper \\
+Follow-up modal answers, A1-B1-C1 & 300 & 1.02 & 0.88--0.99 & improper \\
+Follow-up modal answers, A0-B0-C0 & 300 & 0.57 & $-0.28$--1.09 & improper \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item In A0-B0-C0, A424 has a single category after sparse categories are merged and is dropped.
+\end{tablenotes}
+\end{table}
+
+Among CGSS respondents, A425 is nearly separate from the other four items (\cref{tab:cfa}). In every synthetic population it loads much more strongly on the common factor; across the five first-audit replicates the difference from CGSS is 0.23 to 0.39, with every 95\% interval above zero. The modal-answer populations are close to deterministic, with polychoric correlations as high as 0.998, so their factor solutions are improper and a two-group model with A1-B1-C1 cannot be estimated. Between CGSS and each first-audit replicate, equal thresholds and equal loadings are rejected by the scaled difference test ($p<.001$), while the scaled CFI changes by less than 0.01; with a human sample about a hundred times larger, the loading differences are the more informative result. Graded-response models agree: the discrimination of A425 relative to the mean of the other items is 0.17 in CGSS and 0.30 to 0.53 in the first-audit replicates.
+
 \section{Discussion}
 
 \subsection{What the benchmark identifies}
@@ -408,15 +528,17 @@ This result returns to a central insight of multidimensional gender-ideology res
 
 \subsection{Limitations and next tests}
 
-Five limitations define the scope of the current evidence. First, the audit evaluates one open-weight model. The findings should be described as a Qwen3.5-9B case study until replicated across model families and parameter scales. Second, five repeated draws provide an empirical option distribution but remain coarser than direct candidate-option probabilities. The resulting entropy and calibration diagnostics are therefore less precise than a logit-level audit. Third, the joint-versus-independent contrast changes not only item co-presence but also the structured-output schema, so it identifies a presentation bundle rather than an isolated context mechanism.
+Six limitations define the scope of the current evidence. First, both audits evaluate one open-weight model, and the follow-up uses a single 4-bit quantisation. The findings should be described as a Qwen3.5-9B case study until replicated across model families and parameter scales. Second, the first audit's five repeated draws give a coarser option distribution than direct candidate-option probabilities. The follow-up reads those probabilities, but with the reasoning block closed and a different prompt, so it does not re-estimate the first audit's calibration. Third, the first audit's joint-versus-independent contrast changes not only item co-presence but also the structured-output schema, so it identifies a presentation bundle rather than an isolated context mechanism. The follow-up factorial separates these features, but only with the reasoning block closed.
 
-Fourth, prompt conditions are not fully factorial. The original, neutral, verbal-label, and paraphrased prompts change more than one feature at a time. They cannot separately identify the effects of social-desirability instructions, wording, and output format. A preregistered $2\times2$ design would provide a cleaner prompt-sensitivity test. Fifth, the survey battery itself is imperfect. A425 is a single positively worded item, whereas A421--A424 are traditional statements that are reverse-coded. The human benchmark establishes that unconditional aggregation is questionable, but it cannot separate domain content from all wording and measurement effects.
+Fourth, the first audit's prompt conditions are not fully factorial. The original, neutral, verbal-label, and paraphrased prompts change more than one feature at a time and cannot separately identify the effects of social-desirability instructions, wording, and output format; the follow-up factorial varies presentation and output format but not instructions or wording. Fifth, the follow-up conditions on the most probable earlier answers. A preregistered robustness check with sampled answer histories has not yet been run. Sixth, the survey battery itself is imperfect. A425 is a single positively worded item, whereas A421--A424 are traditional statements that are reverse-coded. The human benchmark establishes that unconditional aggregation is questionable, but it cannot separate domain content from all wording and measurement effects.
 
-Two extensions are therefore more informative than adding further descriptive metrics. A factorial prompt experiment can separate item co-presence, conversation history, and output schema. A cross-model replication can determine whether the observed distortions are specific to Qwen3.5-9B or recur across model families. Perplexity and item-response models may be useful later, but neither substitutes for those identification tests.
+The follow-up carried out the factorial experiment and the item-response analysis that the first audit lacked. Two extensions remain more informative than further descriptive metrics: a replication of the factorial with the reasoning block open, and a cross-model replication that can determine whether the observed distortions are specific to Qwen3.5-9B or recur across model families.
 
 \section{Conclusion}
 
 Synthetic respondents should be evaluated as populations, not merely as fluent impersonations. In this study, a locally deployed Qwen3.5-9B model fails to reproduce several basic properties of Chinese gender attitudes. It generates large, item-specific mean errors, weak stable differentiation among profiles, and stronger coherence between the equal-housework item and the other gender-attitude items than appears in CGSS. Stateless item presentation reduces this coherence on average but does not recover the human structure consistently across waves.
+
+The follow-up audit narrows the mechanism. With the reasoning block closed, the model's own earlier answers are the main source of the extra coherence. The first audit's answers were written inside an open reasoning block, which changes both item means and coherence. In factor models of those answers, the housework item remains more tightly bound to the other attitudes than it is among CGSS respondents.
 
 The survey-trained benchmark changes the interpretation of that failure. Sparse demographic profiles do limit individual prediction, but models using the same prediction-time features can recover the observed distributions substantially better after outcome calibration. The LLM's distortion therefore cannot be reduced to missing profile information alone. At the same time, the comparison does not establish a universal defect of language models or identify a single mechanism. It establishes a narrower methodological point: claims about synthetic populations require benchmarks for base rates, heterogeneity, and covariance, together with explicit accounting of what each model observes during training and prediction.
 

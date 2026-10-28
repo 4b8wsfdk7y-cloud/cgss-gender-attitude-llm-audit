@@ -46,7 +46,10 @@ findings, and accompanying paper.
 > **October 2026 update.** A follow-up audit reads the model's full probability
 > distribution over the five response options instead of sampling answers, and
 > uses a preregistered 2×2×2 experiment to separate three presentation choices
-> that the first audit confounded. See
+> that the first audit confounded. It also found that the v1 answers were
+> generated with the model's thinking mode left on. Under the v1 prompt,
+> turning it off raises the A421 mean by about one scale point and roughly
+> doubles the housework item's coherence with the other four. See
 > [v2: option-probability audit](#v2-option-probability-audit-october-2026).
 
 ## The result in 20 seconds
@@ -160,6 +163,8 @@ See [`docs/architecture.md`](docs/architecture.md) for the package-level design.
 | Local model | `qwen/qwen3.5-9b` served through LM Studio |
 | Primary prompt | `neutral_verbal` |
 | Repeated generation | five fresh stochastic joint calls per profile |
+| Output | integer JSON enforced by the request's response schema |
+| Thinking mode | on (LM Studio default); answers were generated inside an open `<think>` block, see [v2](#why-v1-and-v2-differ-the-thinking-context) |
 | Human reference | 1,000 replications of the same stratified sampling design |
 | Reliability | all 1,500 primary joint calls succeeded |
 
@@ -300,20 +305,105 @@ profile bootstrap replicates drawn within wave.
   CGSS means has a between-profile variance ratio of 0.09: it gives nearly the
   same answer to everyone.
 
+<a id="why-v1-and-v2-differ-the-thinking-context"></a>
+**Why v1 and v2 differ: the thinking context**
+
+v2 item means were far from v1's (A421: 4.42 in A1-B1-C1 against 2.16 in v1),
+and a verbal-label cell did not explain the gap. A check of the v1 runner, the
+v1 response files, and the LM Studio server logs from the v1 run found three
+things the v1 description had wrong or left out:
+
+- v1 used a system prompt ("你正在参加一项社会调查模拟。严格遵守用户要求，只返回JSON，不解释推理。").
+- v1 never produced verbal labels. Each request carried an integer-only JSON
+  schema, which overrode the prompt's request for a label; all 1,500 v1 answers
+  are integer JSON.
+- v1 ran with thinking enabled. LM Studio's model definition turns thinking on
+  by default, and Qwen3.5's chat template has no `/no_think` switch. In every
+  logged call, `content` is empty and the JSON sits in `reasoning_content`: the
+  model wrote its answers inside an open `<think>` block. The model weights are
+  the same as in v2.
+
+A diagnostic scored A421 for the 300 v1 prompts with thinking open and closed,
+changing nothing else:
+
+| A421, v1 prompt | Thinking open (v1) | Thinking closed (v2) |
+|---|---:|---:|
+| Expected score after v1 decoding (T = 0.7, top-p = 0.9) | 2.13 | 3.26 |
+| v1 sampled mean | 2.16 | 2.16 |
+| Mean log-likelihood of the 1,500 v1 answers | −1.53 | −8.30 |
+| v1 answers with zero probability | 15 | 395 |
+| Correlation with v1 profile means | 0.54 | 0.27 |
+
+The open thinking block accounts for the v1 answers far better. Two
+exploratory cells, specified in the preregistration before they were run,
+extend the comparison to all five items:
+
+| v1 prompt, five items, most probable earlier answers | V1-T1: thinking open | V1-T0: thinking closed | A1-B1-C1 (v2 prompt) |
+|---|---:|---:|---:|
+| A425 mean absolute correlation [95% CI] | 0.44 [0.37, 0.50] | 0.91 [0.90, 0.92] | 0.92 [0.90, 0.93] |
+| Mean absolute gap from v1 sampled item means (v1 decoding) | 0.23 | 0.62 | 1.47 |
+| Mean absolute error of item means against CGSS (T = 1) | 0.68 | 0.36 | 0.95 |
+| Between-profile variance ratio | 0.14 | 0.65 | 0.41 |
+| Matched log score (uniform guess: 1.61) | 1.96 | 1.99 | 3.06 |
+
+- With the v1 prompt and thinking closed, coherence equals that of A1-B1-C1
+  (difference −0.01, 95% CI −0.03 to 0.01). Opening the thinking block lowers
+  it by 0.47 (95% CI 0.41 to 0.54). On the primary estimand, the thinking
+  context accounts for the difference between the v1 and v2 set-ups; the
+  system prompt and wording do not.
+- The prompt differences do move item means. With thinking closed, the v1
+  prompt is closer to CGSS than A1-B1-C1 (mean absolute error 0.36 against
+  0.95).
+- Thinking open comes closest to v1's item means. A421 and A425 are within
+  0.11 of v1; A422–A424 are 0.25–0.45 lower than v1. The cells condition on the
+  most probable earlier answers, whereas v1 sampled them, so the two
+  procedures are not the same.
+- Every factorial result above was obtained with thinking closed. Thinking was
+  not crossed with A, B, and C, so the size of the answer-history effect with
+  thinking open is not known; V1-T1 keeps the history in context and reaches
+  0.44, close to the HGB baseline's 0.45. These values come from expected
+  scores and are not on the scale of v1's 0.23–0.34, which was computed on
+  sampled answers.
+- The two cells were added after the A421 diagnostic and are exploratory
+  ([`output/v2/v1_context_*.csv`](output/v2/),
+  [`scripts/11_run_v1_context_cells.py`](scripts/11_run_v1_context_cells.py),
+  [`scripts/13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py)).
+
+**Measurement models (Part 3 of the preregistration)**
+
+Ordinal one-factor models (WLSMV) for the five items, recoded so that higher
+means more egalitarian ([`output/v2/part3_*.csv`](output/v2/)):
+
+| Population | n | A425 standardized loading | Other loadings | Solution |
+|---|---:|---:|---:|---|
+| CGSS (weighted, complete cases) | 31,177 | 0.16 | 0.55–0.77 | proper |
+| v1 sampled answers (5 replicates) | 300 each | 0.39–0.55 (median 0.48) | 0.66–0.92 | proper |
+| v2 modal answers, A1-B1-C1 | 300 | 1.02 | 0.88–0.99 | improper |
+| v2 modal answers, A0-B0-C0 | 300 | 0.57 | −0.28–1.09 | improper; A424 dropped |
+
+- In every synthetic population, A425 loads on the common factor much more
+  strongly than among people: the difference from CGSS is 0.23–0.39 in the v1
+  replicates, with all 95% intervals above zero. The modal-answer populations
+  are close to deterministic (polychoric correlations up to 0.998), so their
+  factor solutions are improper and the CGSS-versus-A1-B1-C1 configural model
+  is not estimable.
+- CGSS versus each v1 replicate: equal thresholds and equal loadings are both
+  rejected by the scaled difference test (p < .001), while scaled CFI changes
+  by less than 0.01. The human sample is about a hundred times larger than the
+  synthetic one, so the loading differences above are the more informative
+  result.
+- Graded-response discriminations tell the same story: A425's discrimination
+  relative to the mean of the other four items is 0.17 in CGSS and 0.30–0.53
+  in the v1 replicates.
+
 **What v2 does not show**
 
-- v2 is not a replication or validation of v1. The designs differ in at least
-  four ways: v1 asked for a verbal label before the number; v1 sampled at
-  T = 0.7 and top-p = 0.9, while v2 reads T = 1 probabilities; v2 conditions on
-  the most probable earlier answers rather than sampled ones; and the model
-  files may differ. The v2 reference cell (A1-B1-C1) corresponds to the v1
-  joint condition only in part.
-- v2 item means are far from v1's. An exploratory verbal-label cell
-  (A1-B1-C2) lowers A425 coherence (0.81 vs. 0.92 in A1-B1-C1) but leaves item
-  means close to A1-B1-C1, so it does not explain the gap. Differences in the
-  v1 call configuration are being checked.
+- v2 is not a replication or validation of v1. Beyond the thinking context,
+  the designs differ in the system prompt, in the user prompt, in decoding (v1
+  sampled at T = 0.7 and top-p = 0.9; v2 reads T = 1 probabilities), and in
+  answer history (v2 conditions on the most probable earlier answers).
 - Still pending: the sampled-history robustness check (five history paths per
-  profile) and the measurement-model analysis (Part 3 of the preregistration).
+  profile).
 - The results describe one 4-bit local model and do not generalize to other
   models or quantizations.
 
@@ -324,7 +414,12 @@ exports the weighted human benchmark;
 [`scripts/09_analyze_logprob_audit.py`](scripts/09_analyze_logprob_audit.py)
 computes the estimands and bootstrap intervals;
 [`scripts/10_plot_v2.R`](scripts/10_plot_v2.R) draws the two figures above from
-the aggregate tables in `output/v2/`. Probability extraction and the
+the aggregate tables in `output/v2/`;
+[`scripts/11_run_v1_context_cells.py`](scripts/11_run_v1_context_cells.py) and
+[`scripts/13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py) run and
+analyze the two v1-prompt cells;
+[`scripts/12_measurement_models.R`](scripts/12_measurement_models.R) fits the
+Part 3 measurement models. Probability extraction and the
 factorial prompts live in
 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py)
 and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py), with
