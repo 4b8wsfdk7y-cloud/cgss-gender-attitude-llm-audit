@@ -1,0 +1,12 @@
+{
+  "benchmark_rds_md5": "5f58fcc3a6aff6d124a6aa9ad0956433",
+  "v2_ledger_md5": "f16436c01cdd0e2ed23dafbe791328a4",
+  "v1_responses_md5": "fdd427fc5d25d12b70e6f90a7232e47a",
+  "human_n": 31177,
+  "synthetic_n": 300,
+  "category_threshold": 10,
+  "lavaan": "0.7.3",
+  "semTools": "0.5.10",
+  "mirt": "1.48",
+  "r": "R version 4.5.2 (2025-10-31)"
+}

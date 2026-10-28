@@ -230,3 +230,18 @@ with standard errors. Reported for A425: its discrimination and its ratio to
 the mean discrimination of A421–A424.
 
 *Output.* Aggregate tables only, in `output/v2/part3_*.csv`.
+
+**2026-10-27, after the Part 3 models were first estimated.** The first run
+stopped because a model did not converge in a synthetic population whose modal
+answers make several polychoric correlations nearly 1. Without changing any
+specified model, the script now (1) records a model that fails or does not
+converge as not estimable and continues; (2) flags improper solutions
+(negative residual variances, or a standardized loading above 1 in absolute
+value) in `part3_fit.csv`; (3) writes the polychoric correlations of every
+population as a descriptive table, `part3_polychoric.csv`; and (4) reports fit
+measures for every estimable invariance step, with difference tests only
+between adjacent estimable steps. Graded-response models that do not converge
+are recorded as missing; the very large discriminations estimated for
+near-deterministic populations are reported but not interpreted. The human
+population has 31,177 respondents with all five items, against 31,856 in the
+per-item benchmark.

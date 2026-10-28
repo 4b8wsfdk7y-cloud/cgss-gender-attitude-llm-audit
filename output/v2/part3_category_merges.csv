@@ -1,0 +1,72 @@
+"analysis","item","merged","into","min_count"
+"single S1","a421","3","2",0
+"single S1","a421","5","4",0
+"single S1","a422","1","2",0
+"single S1","a422","3","1+2",8
+"single S1","a423","5","4",0
+"single S1","a424","1","2",0
+"single S1","a425","5","4",0
+"single S1","a425","1","2",8
+"single S2","a421","1","2",0
+"single S2","a421","5","4",0
+"single S2","a422","1","2",0
+"single S2","a422","5","4",0
+"single S2","a423","1","2",0
+"single S2","a423","5","4",0
+"single S2","a424","1","2",0
+"single S2","a424","3","4",0
+"single S2","a424","5","3+4",0
+"single S2","a424","1+2","3+4+5",2
+"single S2","a424","all","dropped",NA
+"single S2","a425","1","2",0
+"single S2","a425","5","4",0
+"single S3_r1","a421","1","2",3
+"single S3_r1","a422","1","2",1
+"single S3_r1","a423","1","2",4
+"single S3_r1","a424","1","2",4
+"single S3_r2","a421","1","2",5
+"single S3_r2","a422","1","2",1
+"single S3_r2","a423","1","2",4
+"single S3_r2","a424","1","2",3
+"single S3_r3","a421","1","2",4
+"single S3_r3","a422","1","2",3
+"single S3_r3","a423","1","2",3
+"single S3_r3","a424","1","2",3
+"single S3_r4","a421","1","2",7
+"single S3_r4","a422","1","2",1
+"single S3_r4","a423","1","2",5
+"single S3_r4","a424","1","2",5
+"single S3_r5","a421","1","2",2
+"single S3_r5","a422","1","2",0
+"single S3_r5","a422","1+2","3",9
+"single S3_r5","a423","1","2",3
+"single S3_r5","a424","1","2",4
+"invariance human vs S1","a421","3","2",0
+"invariance human vs S1","a421","5","4",0
+"invariance human vs S1","a422","1","2",0
+"invariance human vs S1","a422","3","1+2",8
+"invariance human vs S1","a423","5","4",0
+"invariance human vs S1","a424","1","2",0
+"invariance human vs S1","a425","5","4",0
+"invariance human vs S1","a425","1","2",8
+"invariance human vs S3_r1","a421","1","2",3
+"invariance human vs S3_r1","a422","1","2",1
+"invariance human vs S3_r1","a423","1","2",4
+"invariance human vs S3_r1","a424","1","2",4
+"invariance human vs S3_r2","a421","1","2",5
+"invariance human vs S3_r2","a422","1","2",1
+"invariance human vs S3_r2","a423","1","2",4
+"invariance human vs S3_r2","a424","1","2",3
+"invariance human vs S3_r3","a421","1","2",4
+"invariance human vs S3_r3","a422","1","2",3
+"invariance human vs S3_r3","a423","1","2",3
+"invariance human vs S3_r3","a424","1","2",3
+"invariance human vs S3_r4","a421","1","2",7
+"invariance human vs S3_r4","a422","1","2",1
+"invariance human vs S3_r4","a423","1","2",5
+"invariance human vs S3_r4","a424","1","2",5
+"invariance human vs S3_r5","a421","1","2",2
+"invariance human vs S3_r5","a422","1","2",0
+"invariance human vs S3_r5","a422","1+2","3",9
+"invariance human vs S3_r5","a423","1","2",3
+"invariance human vs S3_r5","a424","1","2",4

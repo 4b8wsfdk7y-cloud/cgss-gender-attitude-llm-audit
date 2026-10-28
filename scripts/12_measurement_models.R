@@ -112,18 +112,31 @@ merge_categories <- function(pops, analysis) {
 present <- function(d, set) intersect(set, names(d))
 syntax <- function(set) paste("F =~", paste(set, collapse = " + "))
 
+# A model that fails or does not converge is recorded as not estimable.
 fit_one <- function(d, set, weighted) {
-  cfa(syntax(set), data = d, ordered = set, estimator = "WLSMV", parameterization = "delta",
-      std.lv = TRUE, sampling.weights = if (weighted) "w" else NULL)
+  fit <- tryCatch(
+    suppressWarnings(cfa(syntax(set), data = d, ordered = set, estimator = "WLSMV",
+                         parameterization = "delta", std.lv = TRUE,
+                         sampling.weights = if (weighted) "w" else NULL)),
+    error = function(e) NULL)
+  if (!is.null(fit) && !lavInspect(fit, "converged")) fit <- NULL
+  fit
 }
+measures <- c("chisq.scaled", "df.scaled", "cfi.scaled", "tli.scaled", "rmsea.scaled", "srmr")
 
-fit_row <- function(fit, population, model, replicate) {
-  m <- fitMeasures(fit, c("chisq.scaled", "df.scaled", "cfi.scaled", "tli.scaled", "rmsea.scaled", "srmr"))
-  data.frame(population = population, replicate = replicate, model = model, n = lavInspect(fit, "nobs"),
-             converged = lavInspect(fit, "converged"), as.list(m))
+fit_row <- function(fit, population, model, replicate, n) {
+  m <- if (is.null(fit)) setNames(as.list(rep(NA_real_, length(measures))), measures)
+       else as.list(fitMeasures(fit, measures))
+  proper <- if (is.null(fit)) NA else {
+    std <- standardizedSolution(fit)
+    lavInspect(fit, "post.check") && all(abs(std$est.std[std$op == "=~"]) <= 1)
+  }
+  data.frame(population = population, replicate = replicate, model = model, n = n,
+             estimable = !is.null(fit), proper = proper, m)
 }
 
 loading_rows <- function(fit, population, replicate) {
+  if (is.null(fit)) return(NULL)
   s <- standardizedSolution(fit)
   s <- s[s$op == "=~", ]
   data.frame(population = population, replicate = replicate, item = s$rhs,
@@ -131,7 +144,7 @@ loading_rows <- function(fit, population, replicate) {
 }
 
 # ---- single-population models ----
-categories <- list(); fits <- list(); loadings <- list(); grm <- list()
+categories <- list(); fits <- list(); loadings <- list(); grm <- list(); polychoric <- list()
 single <- list(list(name = "human", data = human, weighted = TRUE, replicate = 0),
                list(name = "S1", data = s1, weighted = FALSE, replicate = 0),
                list(name = "S2", data = s2, weighted = FALSE, replicate = 0))
@@ -146,17 +159,34 @@ for (pop in single) {
   set4 <- present(d, items[1:4])
   f1 <- fit_one(d, set5, pop$weighted)
   f2 <- fit_one(d, set4, pop$weighted)
-  fits[[length(fits) + 1]] <- fit_row(f1, pop$name, "M1", pop$replicate)
-  fits[[length(fits) + 1]] <- fit_row(f2, pop$name, "M2", pop$replicate)
+  fits[[length(fits) + 1]] <- fit_row(f1, pop$name, "M1", pop$replicate, nrow(d))
+  fits[[length(fits) + 1]] <- fit_row(f2, pop$name, "M2", pop$replicate, nrow(d))
   loadings[[length(loadings) + 1]] <- loading_rows(f1, pop$name, pop$replicate)
 
-  g <- mirt(d[set5], 1, itemtype = "graded", SE = TRUE, verbose = FALSE,
-            survey.weights = if (pop$weighted) d$w else NULL)
-  cf <- coef(g, printSE = TRUE)
-  grm[[length(grm) + 1]] <- do.call(rbind, lapply(set5, function(item) {
-    data.frame(population = pop$name, replicate = pop$replicate, item = item,
-               discrimination = cf[[item]]["par", "a1"], se = cf[[item]]["SE", "a1"])
-  }))
+  # Descriptive (added after estimation, see the pre-registration): polychoric correlations.
+  pc <- tryCatch(suppressWarnings(lavCor(d[set5], ordered = set5,
+                                         sampling.weights = if (pop$weighted) "w" else NULL)),
+                 error = function(e) NULL)
+  if (!is.null(pc)) {
+    pairs <- which(upper.tri(pc), arr.ind = TRUE)
+    polychoric[[length(polychoric) + 1]] <- data.frame(
+      population = pop$name, replicate = pop$replicate,
+      item_x = rownames(pc)[pairs[, 1]], item_y = colnames(pc)[pairs[, 2]], correlation = pc[pairs])
+  }
+
+  g <- tryCatch(suppressWarnings(mirt(d[set5], 1, itemtype = "graded", SE = TRUE, verbose = FALSE,
+                                      survey.weights = if (pop$weighted) d$w else NULL)),
+                error = function(e) NULL)
+  if (!is.null(g) && extract.mirt(g, "converged")) {
+    cf <- coef(g, printSE = TRUE)
+    grm[[length(grm) + 1]] <- do.call(rbind, lapply(set5, function(item) {
+      data.frame(population = pop$name, replicate = pop$replicate, item = item,
+                 discrimination = cf[[item]]["par", "a1"], se = cf[[item]]["SE", "a1"])
+    }))
+  } else {
+    grm[[length(grm) + 1]] <- data.frame(population = pop$name, replicate = pop$replicate,
+                                         item = set5, discrimination = NA, se = NA)
+  }
 }
 categories <- do.call(rbind, categories)
 fits <- do.call(rbind, fits)
@@ -172,6 +202,11 @@ a425 <- do.call(rbind, lapply(split(loadings[loadings$population != "human" & lo
   data.frame(population = s$population, replicate = s$replicate, synthetic = s$loading,
              human = h$loading, difference = diff, lower = diff - half, upper = diff + half)
 }))
+missing <- fits[fits$model == "M1" & !fits$estimable & fits$population != "human", c("population", "replicate")]
+if (nrow(missing)) {
+  a425 <- rbind(a425, data.frame(missing, synthetic = NA, human = h$loading, difference = NA,
+                                 lower = NA, upper = NA))
+}
 a425 <- a425[order(a425$population, a425$replicate), ]
 
 grm_a425 <- do.call(rbind, lapply(split(grm, ~ population + replicate, drop = TRUE), function(s) {
@@ -201,15 +236,21 @@ for (cmp in compare) {
     s <- measEq.syntax(configural.model = syntax(set5), data = d, ordered = set5,
                        parameterization = "theta", ID.fac = "std.lv", ID.cat = "Wu.Estabrook.2016",
                        group = "population", group.equal = if (identical(eq, "")) "" else eq)
-    cfa(as.character(s), data = d, group = "population", ordered = set5, estimator = "WLSMV",
-        parameterization = "theta", sampling.weights = "w")
+    fit <- tryCatch(suppressWarnings(cfa(as.character(s), data = d, group = "population",
+                                         ordered = set5, estimator = "WLSMV",
+                                         parameterization = "theta", sampling.weights = "w")),
+                    error = function(e) NULL)
+    if (!is.null(fit) && !lavInspect(fit, "converged")) fit <- NULL
+    fit
   })
+  inv_measures <- c("chisq.scaled", "df.scaled", "cfi.scaled", "rmsea.scaled")
   for (i in seq_along(models)) {
-    m <- fitMeasures(models[[i]], c("chisq.scaled", "df.scaled", "cfi.scaled", "rmsea.scaled"))
+    m <- if (is.null(models[[i]])) setNames(as.list(rep(NA_real_, 4)), inv_measures)
+         else as.list(fitMeasures(models[[i]], inv_measures))
     row <- data.frame(comparison = paste("human vs", cmp$name), replicate = cmp$replicate,
-                      step = names(models)[[i]], converged = lavInspect(models[[i]], "converged"),
-                      as.list(m), delta_chisq = NA, delta_df = NA, p = NA, delta_cfi = NA, delta_rmsea = NA)
-    if (i > 1) {
+                      step = names(models)[[i]], estimable = !is.null(models[[i]]),
+                      m, delta_chisq = NA, delta_df = NA, p = NA, delta_cfi = NA, delta_rmsea = NA)
+    if (i > 1 && !is.null(models[[i]]) && !is.null(models[[i - 1]])) {
       test <- lavTestLRT(models[[i - 1]], models[[i]])
       prev <- fitMeasures(models[[i - 1]], c("cfi.scaled", "rmsea.scaled"))
       row$delta_chisq <- test[2, "Chisq diff"]
@@ -246,6 +287,7 @@ if (is.null(categories)) {
 }
 write.csv(categories, file.path(output_dir, "part3_category_merges.csv"), row.names = FALSE)
 write.csv(fits, file.path(output_dir, "part3_fit.csv"), row.names = FALSE)
+write.csv(do.call(rbind, polychoric), file.path(output_dir, "part3_polychoric.csv"), row.names = FALSE)
 write.csv(loadings, file.path(output_dir, "part3_loadings.csv"), row.names = FALSE)
 write.csv(a425, file.path(output_dir, "part3_a425_loading.csv"), row.names = FALSE)
 write.csv(invariance, file.path(output_dir, "part3_invariance.csv"), row.names = FALSE)
