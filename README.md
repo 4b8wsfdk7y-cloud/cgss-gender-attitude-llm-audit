@@ -48,7 +48,7 @@ findings, and accompanying paper.
 > uses a preregistered 2×2×2 experiment to separate three presentation choices
 > that the first audit confounded. It also found that the v1 answers were
 > generated with the model's thinking mode left on. Under the v1 prompt,
-> turning it off raises the A421 mean by about one scale point and roughly
+> turning it off moves the A421 mean by about one scale point and roughly
 > doubles the housework item's coherence with the other four. See
 > [v2: option-probability audit](#v2-option-probability-audit-october-2026).
 
@@ -308,7 +308,8 @@ profile bootstrap replicates drawn within wave.
 <a id="why-v1-and-v2-differ-the-thinking-context"></a>
 **Why v1 and v2 differ: the thinking context**
 
-v2 item means were far from v1's (A421: 4.42 in A1-B1-C1 against 2.16 in v1),
+v2 item means were far from v1's (A421 on the original 1–5 response scale:
+4.42 in A1-B1-C1 against 2.16 in v1),
 and a verbal-label cell did not explain the gap. A check of the v1 runner, the
 v1 response files, and the LM Studio server logs from the v1 run found three
 things the v1 description had wrong or left out:
