@@ -122,3 +122,111 @@ three additions.**
    the effect of A at B = 0), and the three-way interaction is the difference
    between the A × B contrasts at C = 1 and at C = 0. The contrasts are not
    halved.
+
+**2026-10-27, after a check of the v1 call path: corrections to the
+2026-10-14 entry, two exploratory cells, and the Part 3 specification.** This
+entry was written before the two cells below were run and before any
+measurement model was estimated. One diagnostic was run before it and is
+reported here as such.
+
+1. *Corrections.* The 2026-10-14 correction misdescribed v1 in three ways,
+   established from the v1 runner (`02_run_local_llm.py`), the v1 response
+   files, and the LM Studio server logs of the v1 run (2026-07-09, UTC).
+   - v1 used a system prompt: "你正在参加一项社会调查模拟。严格遵守用户要求，只返回JSON，不解释推理。"
+     The v2 system prompt drops "只返回JSON".
+   - v1 did not produce verbal labels. Its prompt asked for a label and a
+     score, but each request carried an integer-only JSON schema
+     (`response_format`), and LM Studio's constrained decoding followed the
+     schema. All 1,500 v1 joint responses are integer JSON of the form
+     `{"A421": 4, "A422": 2, ...}` (55 characters, 46 completion tokens).
+     Cell A1-B1-C2 therefore does not reproduce the v1 output format; it
+     remains an exploratory cell about label formats.
+   - v1 ran with thinking enabled. LM Studio's model definition for
+     `qwen/qwen3.5-9b` sets the template variable `enable_thinking` to true by
+     default, and Qwen3.5's chat template has no `/no_think` switch, so the
+     generation prompt ended in an open `<think>` block. In every logged v1
+     call, `content` is empty and the JSON is in `reasoning_content`
+     (45 reasoning tokens); the v1 runner read `reasoning_content` when
+     `content` was empty. v2 renders the template with thinking disabled,
+     which closes an empty `<think></think>` block before the answer.
+   - The weights are the same. LM Studio's download records contain only
+     `lmstudio-community/Qwen3.5-9B-MLX-4bit`, the directory v2 loads.
+   - The same model definition sets top-k 20 and a presence penalty of 1.5 as
+     defaults. v1 requests set only temperature (0.7), top-p (0.9), and the
+     token limit; the logs do not show whether the remaining defaults were
+     applied. Top-k 20 cannot bind on a five-option scale.
+2. *Diagnostic run before this entry.* For the 300 v1 joint prompts
+   (user-prompt hashes checked against the v1 records), A421 was scored with
+   thinking open and with thinking closed, otherwise identical. Its results
+   motivated the cells below and are reported as a diagnostic.
+3. *Exploratory cells V1-T1 and V1-T0* (`scripts/11_run_v1_context_cells.py`).
+   Both use the v1 joint prompt exactly: the v1 system prompt, then a user
+   message of `/no_think`, a newline, and `prompts/neutral_verbal_zh.txt` with
+   the persona. V1-T1 renders the chat template with thinking enabled (the v1
+   context); V1-T0 with thinking disabled. The assistant text is the integer
+   JSON enforced by the v1 schema, with modal earlier answers as history, and
+   each item is scored in one full forward pass. Both cells are analysed with
+   the Part 1 metrics and the Part 2 primary outcome. Three contrasts are
+   estimated with the profile-cluster bootstrap: V1-T1 minus V1-T0 (the
+   thinking context, other v1 settings held fixed), V1-T0 minus A1-B1-C1 (the
+   remaining prompt differences, thinking closed), and V1-T1 minus A1-B1-C1.
+   Item means of V1-T1 are compared descriptively with the v1 sampled means.
+   The cells do not enter the factorial effects.
+
+### Part 3 specification (fixed 2026-10-27, before estimation)
+
+*Populations.* Five items, recoded so that higher values are more egalitarian
+on every item: A421–A424 are reversed (6 − x) and A425 is unchanged.
+
+- Human: the CGSS 2012, 2018, and 2021 analysis samples, respondents with all
+  five items in 1–5 and a positive weight. Weights are rescaled within wave so
+  that each wave has the same total weight, matching the synthetic design of
+  100 profiles per wave.
+- S1 (primary synthetic): modal answers in the reference cell A1-B1-C1,
+  one response per profile (n = 300).
+- S2: modal answers in A0-B0-C0 (no battery, no history, integer), n = 300.
+- S3: the v1 sampled joint responses, analysed as five replicate data sets of
+  300 (repeat 1, …, repeat 5). For S3, the median and range over the five
+  replicates are reported.
+- Synthetic populations are unweighted. Waves are pooled.
+
+*Sparse categories.* Within each analysis, the category with the smallest
+count in any population of that analysis is merged with its neighbour toward
+the scale midpoint (3) if that count is below 10; a sparse middle category is
+merged with whichever neighbour has more observations across the populations.
+The merge is repeated until every remaining category reaches 10 in every
+population, and the same coding is applied to every population in the
+analysis. An item left with a single category is dropped
+from that analysis. All merges and drops are reported.
+
+*Single-population models* (lavaan, ordered items, WLSMV, delta
+parameterization, factor variance fixed to 1; human estimates use the
+rescaled weights):
+
+- M1: one factor, five items.
+- M2: one factor, A421–A424 only.
+
+Reported for each population: scaled CFI, TLI, and RMSEA, and SRMR for M1 and
+M2; standardized loadings with standard errors for M1. *Primary estimand:* the
+standardized A425 loading in M1. Synthetic-minus-human differences are
+reported with 95% intervals from the two standard errors (independent
+samples).
+
+*Invariance* (human versus S1, and human versus each S3 replicate), M1,
+two groups, theta parameterization, identification following Wu and
+Estabrook (2016) via `semTools::measEq.syntax`: configural, then equal
+thresholds, then equal thresholds and loadings (the order Wu and Estabrook
+recommend for ordinal items). Each step is compared with the
+previous one by the scaled chi-square difference test (`lavTestLRT`), and the
+changes in scaled CFI and RMSEA are reported. A step is described as not
+supported when the difference test gives p < .05 and CFI falls by more than
+0.01. Because the human sample is about a hundred times larger than the
+synthetic one, the tests are read together with the size of the loading
+differences.
+
+*Graded response model* (mirt, one dimension, human estimates with survey
+weights): discrimination parameters for all five items in each population,
+with standard errors. Reported for A425: its discrimination and its ratio to
+the mean discrimination of A421–A424.
+
+*Output.* Aggregate tables only, in `output/v2/part3_*.csv`.

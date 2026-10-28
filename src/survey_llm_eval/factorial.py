@@ -10,11 +10,15 @@ C  output format: a bare integer (0) or a one-object JSON answer (1).
    An exploratory third level (2) asks for a verbal label before each score.
 
 Cells A1-B1-C1 and A0-B0-C1 share the battery visibility, answer order, and
-JSON output of the v1 joint and stateless single-item conditions, but ask for
-the score alone. The v1 prompts also required a verbal label before each
-score; level C2 restores that. Each function returns chat messages plus the
-assistant text that precedes the answer, so a caller can read the next-token
-distribution over the response scale (or, for C2, over the five labels).
+integer JSON output of the v1 joint and stateless single-item conditions. They
+differ from v1 in the system prompt, in the user prompt (v1 also asked for a
+verbal label, which its integer-only response schema did not allow), and in
+the chat template: v1 ran with thinking enabled, so its answers were generated
+inside an open ``<think>`` block (see PREREGISTRATION_V2.md, 2026-10-27).
+Level C2 asks for a verbal label before each score. Each function returns chat
+messages plus the assistant text that precedes the answer, so a caller can
+read the next-token distribution over the response scale (or, for C2, over
+the five labels).
 """
 
 from __future__ import annotations
