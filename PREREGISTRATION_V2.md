@@ -342,3 +342,10 @@ replicates, seed 20261013) unless stated otherwise.
 
 The analyses of 1 and 3 are in `scripts/18_analyze_history_comparisons.py`.
 Outputs are aggregate tables in `output/v2/exploratory_*.csv`.
+
+*Addendum to item 1(b), written before the human-history cells were run.*
+Also reported: the least-squares slope of A425 on the mean of the
+respondent's A421–A424 answers, within wave and averaged over waves. Unlike a
+correlation, the slope of an expected score and the slope of observed answers
+estimate the same conditional mean, so the model, HGB, the matched
+respondents, and weighted CGSS can be compared on one scale.
