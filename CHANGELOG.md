@@ -17,6 +17,7 @@
 
 - The v2 section of README.zh-CN now follows the English README section by
   section, with the same tables and figures.
+- The results page shows the four new figures under the matching tables.
 
 ### Fixed
 

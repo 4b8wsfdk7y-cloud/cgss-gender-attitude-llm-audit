@@ -110,6 +110,10 @@
   <tr><td>First-audit answers (5 replicates)</td><td class="num">300 each</td><td class="num">0.39&ndash;0.55</td><td class="num">0.66&ndash;0.92</td><td>proper</td></tr>
   <tr><td>Follow-up modal answers, A1-B1-C1</td><td class="num">300</td><td class="num">1.02</td><td class="num">0.88&ndash;0.99</td><td>improper</td></tr>
 </table>
+<figure>
+  <img src="assets/v2_measurement_loadings.png" alt="Standardized factor loadings of the five items in CGSS and in the five first-audit replicates">
+  <figcaption>Among people the housework item barely loads on the common factor (0.16); in the first audit's answers it loads 0.39&ndash;0.55.</figcaption>
+</figure>
 <p>Every interval for the difference between a first-audit replicate and CGSS lies above zero. The modal-answer populations are nearly deterministic, so their factor solutions are improper.</p>
 
 <h3>Robustness: sampled answer histories</h3>
@@ -140,6 +144,10 @@
   <tr><td>Target item only, JSON (A0-B0-C1)</td><td class="num">+0.37</td><td class="num">+1.10</td><td class="num">+0.90</td><td class="num">+0.77</td><td class="num">&minus;1.46</td></tr>
   <tr><td>Follow-up reference (A1-B1-C1)</td><td class="num">&minus;1.22</td><td class="num">&minus;0.23</td><td class="num">&minus;0.69</td><td class="num">&minus;1.03</td><td class="num">&minus;1.56</td></tr>
 </table>
+<figure>
+  <img src="assets/v2_item_mean_errors.png" alt="Item-mean errors against CGSS for each item in eleven configurations">
+  <figcaption>Error against the weighted CGSS mean of each item in eleven configurations; positive values are more egalitarian than CGSS.</figcaption>
+</figure>
 <p>The first audit's pattern, more egalitarian than CGSS on A421&ndash;A424 and less on housework, holds only in some configurations. With the full item block shown, the model is less egalitarian than CGSS on A421&ndash;A424 in all four conditions, and on all five items in the reference condition.</p>
 
 <h3>Subgroup gradients spread to the housework item</h3>
@@ -148,6 +156,10 @@
   <tr><td>Years of education</td><td class="num">0.055</td><td class="num">0.019</td><td class="num">0.011&ndash;0.098</td></tr>
   <tr><td>Urban residence</td><td class="num">0.16</td><td class="num">0.01</td><td class="num">0.03&ndash;0.88</td></tr>
 </table>
+<figure>
+  <img src="assets/v2_subgroup_gradients.png" alt="Coefficients for sex, education, and urban residence on the public-role items and the housework item">
+  <figcaption>Coefficients in the eight factorial conditions (dots), in CGSS (diamonds), and in the first audit's answers (triangles).</figcaption>
+</figure>
 <p>Among people, education and urban residence go with egalitarian answers on public roles but hardly with housework. The model extends both gradients to housework; in seven of eight conditions the urban coefficient for housework is 0.21&ndash;0.88.</p>
 
 <h3>Given a respondent's real answers, the model still binds housework to them</h3>
@@ -161,6 +173,10 @@
   <tr><td>Survey-trained model, respondent's history</td><td class="num">1.15</td><td class="num">0.09</td></tr>
   <tr><td>CGSS, weighted</td><td class="num"></td><td class="num">0.11</td></tr>
 </table>
+<figure>
+  <img src="assets/v2_human_history.png" alt="A425 log score and slope on the respondent's earlier answers, for the model and the survey-trained model">
+  <figcaption>Left: log score of the respondent's own A425 answer. Right: slope of the A425 prediction on the respondent's A421&ndash;A424 mean, with 95% intervals.</figcaption>
+</figure>
 <p>The survey-trained model improves on every item when given the respondent's answers. For the language model the effect on the housework item depends on the condition: its log score gets much worse in the item-block, JSON condition and slightly better in the single-item, integer condition, and its ranked probability score gets worse in both. In both conditions the model moves its housework prediction with the earlier answers five to six times as steeply as people's answers move together. A uniform guess has a log score of 1.61.</p>
 
 <h2>What this does not show</h2>
