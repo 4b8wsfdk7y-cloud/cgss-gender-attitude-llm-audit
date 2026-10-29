@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Results for the second human-history cell, H-A0-B1-C0, analysed once all
+  296 profiles were scored. `output/v2/exploratory_human_history_*.csv` and
+  `exploratory_history_dependence.csv` now cover both cells; the H-A1-B1-C1
+  rows are unchanged. README, README.zh-CN, the paper, and the results page
+  report both cells.
+
 ## 2.0.0 (2026-10-29)
 
 ### Added

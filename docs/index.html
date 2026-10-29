@@ -151,15 +151,17 @@
 <p>Among people, education and urban residence go with egalitarian answers on public roles but hardly with housework. The model extends both gradients to housework; in seven of eight conditions the urban coefficient for housework is 0.21&ndash;0.88.</p>
 
 <h3>Given a respondent's real answers, the model still binds housework to them</h3>
-<p>In H-A1-B1-C1 the history before each item holds the matched CGSS respondent's own earlier answers (296 profiles).</p>
+<p>In two cells, H-A1-B1-C1 and H-A0-B1-C0, the history before each item holds the matched CGSS respondent's own earlier answers (296 profiles).</p>
 <table>
   <tr><th>Source</th><th class="num">Log score, A425</th><th class="num">Slope of A425 on the respondent's A421&ndash;A424 mean</th></tr>
-  <tr><td>Model, respondent's history</td><td class="num">3.45</td><td class="num">0.65</td></tr>
-  <tr><td>Model, no history</td><td class="num">1.68</td><td class="num">0.15</td></tr>
+  <tr><td>Model, item block and JSON, respondent's history</td><td class="num">3.45</td><td class="num">0.65</td></tr>
+  <tr><td>Model, item block and JSON, no history</td><td class="num">1.68</td><td class="num">0.15</td></tr>
+  <tr><td>Model, single item and integer, respondent's history</td><td class="num">2.82</td><td class="num">0.55</td></tr>
+  <tr><td>Model, single item and integer, no history</td><td class="num">3.11</td><td class="num">0.12</td></tr>
   <tr><td>Survey-trained model, respondent's history</td><td class="num">1.15</td><td class="num">0.09</td></tr>
   <tr><td>CGSS, weighted</td><td class="num"></td><td class="num">0.11</td></tr>
 </table>
-<p>The respondent's answers improve the model's predictions of A423 and A424 but make A425 much worse, while the survey-trained model improves on every item. The model moves its housework prediction with the earlier answers about six times as steeply as people's answers move together.</p>
+<p>The survey-trained model improves on every item when given the respondent's answers. For the language model the effect on the housework item depends on the condition: its log score gets much worse in the item-block, JSON condition and slightly better in the single-item, integer condition, and its ranked probability score gets worse in both. In both conditions the model moves its housework prediction with the earlier answers five to six times as steeply as people's answers move together. A uniform guess has a log score of 1.61.</p>
 
 <h2>What this does not show</h2>
 <ul>

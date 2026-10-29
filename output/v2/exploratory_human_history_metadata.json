@@ -5,9 +5,13 @@
     "H-A1-B1-C1": [
       "A1-B1-C1",
       "A1-B0-C1"
+    ],
+    "H-A0-B1-C0": [
+      "A0-B1-C0",
+      "A0-B0-C0"
     ]
   },
-  "human_history_records": 1184,
+  "human_history_records": 2368,
   "cgss_weighted_by_wave": [
     {
       "wave": "2012",
