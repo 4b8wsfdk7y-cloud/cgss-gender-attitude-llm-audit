@@ -508,6 +508,63 @@ Follow-up modal answers, A0-B0-C0 & 300 & 0.57 & $-0.28$--1.09 & improper \\
 
 Among CGSS respondents, A425 is nearly separate from the other four items (\cref{tab:cfa}). In every synthetic population it loads much more strongly on the common factor; across the five first-audit replicates the difference from CGSS is 0.23 to 0.39, with every 95\% interval above zero. The modal-answer populations are close to deterministic, with polychoric correlations as high as 0.998, so their factor solutions are improper and a two-group model with A1-B1-C1 cannot be estimated. Between CGSS and each first-audit replicate, equal thresholds and equal loadings are rejected by the scaled difference test ($p<.001$), while the scaled CFI changes by less than 0.01; with a human sample about a hundred times larger, the loading differences are the more informative result. Graded-response models agree: the discrimination of A425 relative to the mean of the other items is 0.17 in CGSS and 0.30 to 0.53 in the first-audit replicates.
 
+%ROBUST
+
+\subsection{Exploratory analyses}
+
+Three further analyses were added to the preregistration after its results were known and before the analyses were run. They are reported as exploratory and change no preregistered estimand.
+
+\paragraph{Direction of the item-mean errors.} In egalitarian coding, the first audit's answers were more egalitarian than CGSS on A421--A424 and less on A425 (\cref{tab:direction}). The same pattern appears under the first-audit prompt with the reasoning block open and in the follow-up when only the target item is shown with JSON output. In the four cells that show the item block, the model is less egalitarian than CGSS on A421--A424, and A425 is understated in six of the eight factorial cells. The item-specific pattern of Section~\ref{sec:results} therefore describes the first-audit configuration; its sign is not a stable property of the model.
+
+\begin{table}[H]
+\centering
+\caption{Item-mean error against CGSS in egalitarian coding}
+\label{tab:direction}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+ & A421 & A422 & A423 & A424 & A425 \\
+\midrule
+CGSS mean & 2.80 & 3.17 & 3.03 & 3.99 & 3.91 \\
+First-audit answers (reasoning open) & 1.04 & 1.08 & 0.60 & 0.09 & $-0.33$ \\
+V1-T1 (first-audit prompt, reasoning open) & 0.80 & 1.16 & 0.74 & 0.27 & $-0.43$ \\
+A0-B0-C1 (target item only, JSON) & 0.37 & 1.10 & 0.90 & 0.77 & $-1.46$ \\
+A1-B1-C1 (follow-up reference) & $-1.22$ & $-0.23$ & $-0.69$ & $-1.03$ & $-1.56$ \\
+A1-B0-C0 (item block, no history, integer) & $-0.65$ & $-0.36$ & $-0.60$ & $-1.30$ & 0.01 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Wave-averaged means. Rows below the first give the model mean minus the CGSS mean.
+\end{tablenotes}
+\end{table}
+
+\paragraph{Subgroup gradients.} Within wave, the egalitarian-coded expected scores of the 100 profiles were regressed on sex, years of education, age, and urban residence, the specification of the first audit, and compared with the weighted regression in the full CGSS sample. A regression coefficient of an expected score and of an observed answer estimate the same conditional mean, so the two are on one scale. Among CGSS respondents, urban residence and education go with more egalitarian answers on the public-role items but hardly with A425, while women differ from men more on A425 than on the public-role items (\cref{tab:gradients}). The model extends the social gradients to the housework item. In seven of the eight factorial cells the urban-residence coefficient for A425 lies between 0.21 and 0.88, against 0.02 in CGSS, and every interval for the difference lies above zero; the first audit's sampled answers give 0.29. In CGSS the education coefficient is 0.036 larger for the public-role index than for A425; in every cell this difference is smaller ($-0.070$ to 0.015), and every interval for its difference from CGSS lies below zero. The gender gap on the public-role index exceeds the CGSS value in seven of the eight cells. Because many coefficients are compared, only patterns that hold across cells are described.
+
+\begin{table}[H]
+\centering
+\caption{Subgroup gradients, averaged over waves (egalitarian coding)}
+\label{tab:gradients}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+ & \multicolumn{2}{c}{CGSS} & \multicolumn{2}{c}{Follow-up, eight cells} & First audit \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Coefficient & Public & Housework & Public & Housework & Public / housework \\
+\midrule
+Female & 0.15 & 0.30 & 0.11--0.58 & 0.17--0.69 & 0.22 / 0.50 \\
+Years of education & 0.055 & 0.019 & 0.017--0.084 & 0.011--0.098 & 0.018 / 0.073 \\
+Urban residence & 0.16 & 0.02 & 0.13--0.36 & 0.03--0.88 & 0.20 / 0.29 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Public: mean of A421--A424. Housework: A425. Models also include age in decades.
+\end{tablenotes}
+\end{table}
+
+\paragraph{Response-level coherence of the survey-trained model.} Five draws per profile from the out-of-fold gradient boosting distributions give a response-level A425 coherence of 0.08; the median for human samples of 100 per wave is 0.10. A generator whose distributions barely differ between profiles produces low response-level correlations whatever its structure, so response-level values in the human range do not by themselves show that a structure is recovered.
+
+%HUMANHIST
+
 \section{Discussion}
 
 \subsection{What the benchmark identifies}
@@ -522,7 +579,7 @@ The comparison also clarifies what the marginal prior does and does not show. It
 
 \subsection{Implications for gender-attitude research}
 
-The substantive pattern is not a generic left- or right-leaning shift. Qwen3.5-9B overstates egalitarianism on the first four traditional statements, especially family orientation and male ability, while understating support for equal housework. A single ideological-bias label would therefore conceal the model's item-specific errors. The model also over-associates A425 with the other items, making human attitudes look more consistently ordered than they are.
+The substantive pattern is not a generic left- or right-leaning shift. In the first-audit configuration, Qwen3.5-9B overstates egalitarianism on the first four traditional statements, especially family orientation and male ability, while understating support for equal housework. The follow-up shows that the sign of these errors changes with the configuration (\cref{tab:direction}), so a single ideological-bias label would conceal both the item-specific errors and their dependence on presentation. The model also over-associates A425 with the other items, most strongly when its earlier answers are in context, and in nearly every configuration it extends the social gradients of the public-role items to housework (\cref{tab:gradients}). Both make human attitudes look more consistently ordered than they are.
 
 This result returns to a central insight of multidimensional gender-ideology research: ambivalence can be socially meaningful. People can endorse equality in one setting and resist it in another. If synthetic respondents are optimized, prompted, or decoded in ways that favor internally consistent personas, they may erase precisely the combinations that social scientists seek to explain. Such data would be particularly hazardous for scale construction, latent-class analysis, subgroup inference, or simulations of attitude change.
 

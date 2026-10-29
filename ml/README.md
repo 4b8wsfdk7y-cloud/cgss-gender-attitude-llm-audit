@@ -1,7 +1,9 @@
 # Survey-trained ML benchmark
 
-This module compares Qwen3-8B synthetic responses with supervised models
-trained on CGSS human responses. All models receive the same demographic
+This module compares Qwen3.5-9B synthetic responses (the frozen v1 audit; an
+earlier version of this benchmark used Qwen3-8B) with supervised models
+trained on CGSS human responses. Model settings and features are in
+`ml/config.json`. All models receive the same demographic
 features. All five outcomes are coded from 1 to 5 with higher values indicating
 more egalitarian attitudes.
 
@@ -11,6 +13,11 @@ more egalitarian attitudes.
 python3 -m venv ml/.venv
 ml/.venv/bin/python -m pip install -r ml/requirements.txt
 ```
+
+On macOS 27 the scipy 1.15.3 wheel fails to load (`__thread_bss` dyld error).
+`pip install scipy==1.14.1` works with scikit-learn 1.7.2 and was used for
+the v2 exploratory model with answer history
+(`scripts/16_fit_hgb_with_history.py`).
 
 ## Run
 
@@ -30,7 +37,7 @@ second command fits:
 
 Evaluation includes five-fold out-of-fold predictions, temporal transfer from
 2012 and 2018 to 2021, and a direct comparison on the 300 profiles used in the
-Qwen3-8B audit. Qwen metrics use the empirical distribution from five repeated
+LLM audit. Qwen metrics use the empirical distribution from five repeated
 draws per profile. The main temporal comparison is restricted to the exact 100
 matched 2021 profiles; full-wave 2021 metrics remain a supplementary
 generalization check.

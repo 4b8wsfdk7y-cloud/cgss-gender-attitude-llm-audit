@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SurveyLLM-Eval: an audit of LLM synthetic respondents against CGSS</title>
+<meta name="description" content="A preregistered population-fidelity audit of Qwen3.5-9B synthetic respondents against the Chinese General Social Survey, 2012, 2018, and 2021.">
+<style>
+  :root { --text: #1f2328; --muted: #59636e; --rule: #d1d9e0; --accent: #0b5cad; --bg-soft: #f6f8fa; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 780px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 1.3rem; margin: 48px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 1.05rem; margin: 28px 0 8px; }
+  p, li { margin: 0 0 12px; }
+  a { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 1.05rem; margin: 0 0 16px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 16px 0 8px; font-size: 0.95rem; }
+  .note { background: var(--bg-soft); border-left: 3px solid var(--rule); padding: 10px 14px; color: var(--muted); font-size: 0.93rem; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 18px; font-size: 0.92rem; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  th { font-weight: 600; }
+  td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  figure { margin: 18px 0 24px; }
+  figure img { width: 100%; height: auto; border: 1px solid var(--rule); }
+  figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+  code { font-size: 0.88em; background: var(--bg-soft); padding: 1px 4px; border-radius: 3px; }
+  pre { background: var(--bg-soft); padding: 12px; overflow-x: auto; font-size: 0.85rem; }
+  footer { margin-top: 56px; color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Can an LLM reproduce a survey population from demographics alone?</h1>
+<p class="subtitle">A preregistered audit of Qwen3.5-9B synthetic respondents against the Chinese General Social Survey (CGSS) 2012, 2018, and 2021</p>
+<p>Ge Song, Wuhan University</p>
+<div class="links">
+  <a href="https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit">Repository</a>
+  <a href="https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/blob/main/paper/main_showcase.pdf">Paper (PDF)</a>
+  <a href="https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/blob/main/PREREGISTRATION_V2.md">Preregistration</a>
+  <a href="https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/tree/main/output/v2">Aggregate results</a>
+  <a href="https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/blob/main/CHANGELOG.md">Changelog</a>
+</div>
+
+<h2>Summary</h2>
+<p>A locally run Qwen3.5-9B model was given only the demographic attributes of 300 de-identified CGSS profiles (100 per wave) and asked to answer a five-item gender-attitude battery. The generated population was compared with weighted benchmarks from 31,856 respondents, repeated human samples of the same size, and survey-trained machine-learning models. The model never saw the profiled respondents' answers.</p>
+<ul>
+  <li>The first audit (August 2026) sampled answers. Eleven of twelve wave-level core diagnostics fall outside the 95% range of repeated human samples of the same size.</li>
+  <li>The follow-up audit (October 2026) reads the model's probabilities for the five options directly and uses a preregistered 2&times;2&times;2 experiment. The model's own earlier answers are the main source of the excess coherence between the housework item (A425) and the other four items.</li>
+  <li>The first audit's answers turned out to have been generated inside the model's open reasoning block. Under the first-audit prompt, closing that block roughly doubles the housework item's coherence with the other items.</li>
+  <li>In ordinal factor models, A425 loads 0.16 on the common factor among CGSS respondents and 0.39&ndash;0.55 in the first audit's synthetic answers.</li>
+</ul>
+
+<h2>First audit: sampled answers</h2>
+<p>Five fresh joint calls per profile (1,500 responses), temperature 0.7 and top-p 0.9.</p>
+<table>
+  <tr><th>Diagnostic</th><th class="num">Qwen3.5-9B, by wave</th><th class="num">Human 95% reference</th></tr>
+  <tr><td>Absolute mean error (lower is better)</td><td class="num">0.569&ndash;0.707</td><td class="num">upper bound 0.160&ndash;0.168</td></tr>
+  <tr><td>Total variation (lower is better)</td><td class="num">0.214&ndash;0.268</td><td class="num">upper bound 0.100&ndash;0.104</td></tr>
+  <tr><td>Variance ratio (1 is best)</td><td class="num">0.668&ndash;0.975</td><td class="num">0.846&ndash;1.141</td></tr>
+  <tr><td>Correlation-matrix RMSE (lower is better)</td><td class="num">0.143&ndash;0.192</td><td class="num">upper bound 0.137&ndash;0.141</td></tr>
+  <tr><td>A425 mean absolute correlation</td><td class="num">0.232&ndash;0.335</td><td class="num">upper bound 0.198&ndash;0.234</td></tr>
+</table>
+<ul>
+  <li>The errors are item-specific: the model overstates egalitarianism on A421&ndash;A424 and understates support for equal housework (A425).</li>
+  <li>Repeated draws add randomness more than stable differences between profiles: 68.2% of predictive variance lies within profiles, and the between-profile variance ratio is 0.265.</li>
+  <li>Sparse profiles are not the whole explanation. A histogram gradient boosting model using the same attributes reduces total variation from 0.282 to 0.071.</li>
+</ul>
+<figure>
+  <img src="assets/marginal_fidelity.png" alt="Marginal fidelity of Qwen3.5-9B answers against CGSS across three waves">
+  <figcaption>Marginal fidelity across the three CGSS waves (first audit).</figcaption>
+</figure>
+
+<h2>Follow-up audit: option probabilities and a factorial experiment</h2>
+<p>For each profile, item, and condition, one forward pass returns the probabilities of the options 1&ndash;5 (12,000 forward passes, MLX, 4-bit weights, output projection in float32). Three presentation features that the first audit bundled are crossed: whether the full item block is visible (A), whether the model's earlier answers remain in context (B), and integer versus JSON output (C). The <a href="https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit/blob/main/PREREGISTRATION_V2.md">preregistration</a> was committed on 13 October 2026, before any CGSS profile was scored. The primary outcome is the mean absolute correlation between the expected score on A425 and the expected scores on A421&ndash;A424, with a profile-cluster bootstrap of 2,000 replicates.</p>
+<table>
+  <tr><th>Effect on A425 mean absolute correlation</th><th class="num">Estimate</th><th class="num">95% interval</th></tr>
+  <tr><td>B: answer history in context</td><td class="num">+0.379</td><td class="num">[0.339, 0.410]</td></tr>
+  <tr><td>A: full item block visible</td><td class="num">+0.048</td><td class="num">[0.022, 0.074]</td></tr>
+  <tr><td>C: JSON output</td><td class="num">+0.013</td><td class="num">[&minus;0.013, 0.039]</td></tr>
+  <tr><td>A &times; C</td><td class="num">+0.237</td><td class="num">[0.192, 0.286]</td></tr>
+  <tr><td>A &times; B &times; C</td><td class="num">&minus;0.138</td><td class="num">[&minus;0.239, &minus;0.044]</td></tr>
+</table>
+<figure>
+  <img src="assets/v2_coherence_by_cell.png" alt="A425 coherence in the eight factorial conditions">
+  <figcaption>A425 coherence in the eight conditions. Cells without history range from 0.39 to 0.58 (survey-trained model: 0.45); cells with history from 0.78 to 0.92.</figcaption>
+</figure>
+<ul>
+  <li>In every condition the matched log score (1.97&ndash;3.06) is worse than a uniform guess over five options (ln 5 &asymp; 1.61): the model is confidently wrong about individual respondents.</li>
+  <li>The condition closest to the CGSS item means has a between-profile variance ratio of 0.09; it gives nearly the same answer to everyone.</li>
+</ul>
+
+<h3>Why the two audits differ: the thinking context</h3>
+<p>A check of the first audit's runner, response files, and server logs showed that its answers were written inside an open <code>&lt;think&gt;</code> block, because LM Studio enabled the model's thinking mode by default. Two exploratory cells, specified in the preregistration before they were run, score the first-audit prompt with that block open or closed.</p>
+<table>
+  <tr><th>First-audit prompt, most probable earlier answers</th><th class="num">Open</th><th class="num">Closed</th><th class="num">A1-B1-C1</th></tr>
+  <tr><td>A425 mean absolute correlation</td><td class="num">0.44</td><td class="num">0.91</td><td class="num">0.92</td></tr>
+  <tr><td>Mean absolute gap from first-audit item means</td><td class="num">0.23</td><td class="num">0.62</td><td class="num">1.47</td></tr>
+  <tr><td>Mean absolute error against CGSS item means</td><td class="num">0.68</td><td class="num">0.36</td><td class="num">0.95</td></tr>
+</table>
+<p>Closing the block raises coherence by 0.47 (95% interval 0.41 to 0.54), to the level of A1-B1-C1 (difference &minus;0.01, interval &minus;0.03 to 0.01). The other prompt differences move item means instead. The factorial was run with the block closed; thinking was not crossed with A, B, and C.</p>
+
+<h3>Measurement models</h3>
+<p>Ordinal one-factor models (WLSMV), items coded so that higher is more egalitarian.</p>
+<table>
+  <tr><th>Population</th><th class="num">n</th><th class="num">A425 loading</th><th class="num">Other loadings</th><th>Solution</th></tr>
+  <tr><td>CGSS, weighted</td><td class="num">31,177</td><td class="num">0.16</td><td class="num">0.55&ndash;0.77</td><td>proper</td></tr>
+  <tr><td>First-audit answers (5 replicates)</td><td class="num">300 each</td><td class="num">0.39&ndash;0.55</td><td class="num">0.66&ndash;0.92</td><td>proper</td></tr>
+  <tr><td>Follow-up modal answers, A1-B1-C1</td><td class="num">300</td><td class="num">1.02</td><td class="num">0.88&ndash;0.99</td><td>improper</td></tr>
+</table>
+<p>Every interval for the difference between a first-audit replicate and CGSS lies above zero. The modal-answer populations are nearly deterministic, so their factor solutions are improper.</p>
+
+<!-- ROBUSTNESS -->
+
+<h2>Exploratory analyses</h2>
+<p>Added to the preregistration on 29 October 2026, after its results were known and before these analyses were run.</p>
+
+<h3>The direction of the bias depends on the configuration</h3>
+<table>
+  <tr><th>Error against CGSS (egalitarian coding)</th><th class="num">A421</th><th class="num">A422</th><th class="num">A423</th><th class="num">A424</th><th class="num">A425</th></tr>
+  <tr><td>First audit (thinking open)</td><td class="num">+1.04</td><td class="num">+1.08</td><td class="num">+0.60</td><td class="num">+0.09</td><td class="num">&minus;0.33</td></tr>
+  <tr><td>Target item only, JSON (A0-B0-C1)</td><td class="num">+0.37</td><td class="num">+1.10</td><td class="num">+0.90</td><td class="num">+0.77</td><td class="num">&minus;1.46</td></tr>
+  <tr><td>Follow-up reference (A1-B1-C1)</td><td class="num">&minus;1.22</td><td class="num">&minus;0.23</td><td class="num">&minus;0.69</td><td class="num">&minus;1.03</td><td class="num">&minus;1.56</td></tr>
+</table>
+<p>The first audit's pattern, more egalitarian than CGSS on A421&ndash;A424 and less on housework, holds only in some configurations. With the full item block shown, the model is less egalitarian than CGSS on every item.</p>
+
+<h3>Subgroup gradients spread to the housework item</h3>
+<table>
+  <tr><th>Coefficient</th><th class="num">CGSS, public roles</th><th class="num">CGSS, housework</th><th class="num">Model, housework (8 cells)</th></tr>
+  <tr><td>Years of education</td><td class="num">0.055</td><td class="num">0.019</td><td class="num">0.011&ndash;0.098</td></tr>
+  <tr><td>Urban residence</td><td class="num">0.16</td><td class="num">0.02</td><td class="num">0.03&ndash;0.88</td></tr>
+</table>
+<p>Among people, education and urban residence go with egalitarian answers on public roles but hardly with housework. The model extends both gradients to housework; in seven of eight conditions the urban coefficient for housework is 0.21&ndash;0.88.</p>
+
+<!-- HUMANHIST -->
+
+<h2>What this does not show</h2>
+<ul>
+  <li>The follow-up is not a replication or validation of the first audit; the two differ in thinking context, system and user prompt, decoding, and how answer histories are formed.</li>
+  <li>All results describe one 4-bit local model and do not generalize to other models or quantizations.</li>
+  <li>A425 is a single positively worded item; its separation from A421&ndash;A424 can reflect content, wording, or measurement error.</li>
+</ul>
+
+<h2>Data boundary</h2>
+<p>CGSS microdata are licensed and are not redistributed. The repository contains code, a synthetic demonstration fixture, and aggregate tables only. All model inference ran locally; no profile was sent to an external API.</p>
+
+<h2>Citation</h2>
+<pre>Song, Ge. 2026. SurveyLLM-Eval: An Estimand-Aware Audit of LLM Synthetic Respondents.
+https://github.com/4b8wsfdk7y-cloud/cgss-gender-attitude-llm-audit</pre>
+
+<footer>Code under the MIT License. See the repository's NOTICE.md for non-code material.</footer>
+</main>
+</body>
+</html>

@@ -20,6 +20,19 @@
 - Part 3 measurement models: ordinal CFA, invariance tests, and graded-response
   models for CGSS and three synthetic populations
   (`scripts/12_measurement_models.R`).
+- Preregistered robustness check with sampled answer histories: five seeded
+  paths per profile in the four history cells
+  (`scripts/07_run_logprob_audit.py --history sampled`,
+  `scripts/14_analyze_sampled_history.py`).
+- Exploratory analyses specified on 2026-10-29: human-history cells that use
+  the matched respondent's own earlier answers
+  (`scripts/15_run_human_history.py`), gradient boosting with answer history
+  (`scripts/16_fit_hgb_with_history.py`), subgroup gradients
+  (`scripts/17_subgroup_gradients.py`), their comparisons
+  (`scripts/18_analyze_history_comparisons.py`), and item means in egalitarian
+  coding (`scripts/19_item_means_egalitarian.py`).
+- `ml/config.json`, which `ml/scripts/02_train_evaluate.py` reads.
+- A results page in `docs/index.html`.
 
 ### Changed
 
@@ -37,6 +50,12 @@
   with thinking enabled, so its answers were generated inside an open
   `<think>` block and read from `reasoning_content`. The v1 and v2 weights are
   the same. See the 2026-10-27 entry of `PREREGISTRATION_V2.md`.
+- The paper's weighted CGSS correlation between A425 and the four-item mean:
+  0.05, 0.10, and 0.11 by wave (the earlier values, 0.05 to 0.08, were close
+  to the unweighted ones).
+- The paper and README now qualify the direction of the item-mean errors,
+  which changes with the configuration.
+- `ml/README.md` named Qwen3-8B as the comparison model; it is Qwen3.5-9B.
 
 ## 0.1.0 (2026-08-02)
 

@@ -397,14 +397,78 @@ means more egalitarian ([`output/v2/part3_*.csv`](output/v2/)):
   relative to the mean of the other four items is 0.17 in CGSS and 0.30–0.53
   in the v1 replicates.
 
+<!-- ROBUST -->
+
+**Exploratory analyses (added 29 October 2026)**
+
+Specified in the preregistration's 2026-10-29 entry before they were run; they
+do not change any preregistered estimand.
+
+*The direction of the item-mean errors depends on the configuration.* In
+egalitarian coding ([`output/v2/v2_item_means_egalitarian.csv`](output/v2/v2_item_means_egalitarian.csv)),
+error against the wave-averaged CGSS mean:
+
+| | A421 | A422 | A423 | A424 | A425 |
+|---|---:|---:|---:|---:|---:|
+| CGSS mean | 2.80 | 3.17 | 3.03 | 3.99 | 3.91 |
+| v1 sampled answers (thinking open) | +1.04 | +1.08 | +0.60 | +0.09 | −0.33 |
+| V1-T1 (v1 prompt, thinking open) | +0.80 | +1.16 | +0.74 | +0.27 | −0.43 |
+| A0-B0-C1 (target item only, JSON) | +0.37 | +1.10 | +0.90 | +0.77 | −1.46 |
+| A1-B1-C1 (v2 reference) | −1.22 | −0.23 | −0.69 | −1.03 | −1.56 |
+| A1-B0-C0 (item block, no history, integer) | −0.65 | −0.36 | −0.60 | −1.30 | +0.01 |
+
+v1's pattern (more egalitarian than CGSS on A421–A424, less on A425) appears
+when the thinking block is open and when only the target item is shown with
+JSON output. In all four cells that show the item block, the model is less
+egalitarian than CGSS on A421–A424. A425 is understated in six of the eight
+factorial cells. The sign of the bias is a property of the configuration,
+not of the model alone.
+
+*Subgroup gradients* ([`output/v2/exploratory_subgroup_gradients.csv`](output/v2/exploratory_subgroup_gradients.csv)).
+Within wave, egalitarian-coded expected scores are regressed on sex, years of
+education, age, and urban residence (the v1 specification); the benchmark is
+the weighted full-CGSS regression. Coefficients averaged over waves:
+
+| Coefficient | CGSS, public roles (A421–A424) | CGSS, housework (A425) | Model, public roles (8 cells) | Model, housework (8 cells) | v1 sampled, public / housework |
+|---|---:|---:|---:|---:|---:|
+| Female | 0.15 | 0.30 | 0.11–0.58 | 0.17–0.69 | 0.22 / 0.50 |
+| Years of education | 0.055 | 0.019 | 0.017–0.084 | 0.011–0.098 | 0.018 / 0.073 |
+| Urban residence | 0.16 | 0.02 | 0.13–0.36 | 0.03–0.88 | 0.20 / 0.29 |
+
+- Among CGSS respondents, urban residence and education go with more
+  egalitarian answers on the public-role items but hardly with A425, and women
+  differ from men more on A425 than on the public-role items.
+- The model extends the social gradients to the housework item. In seven of
+  the eight factorial cells the urban-residence coefficient for A425 is
+  0.21–0.88, against 0.02 in CGSS, with every interval for the difference above
+  zero; v1's sampled answers give 0.29. For education, the public-minus-housework
+  difference is +0.036 in CGSS and between −0.070 and +0.015 in every cell, all
+  intervals for the difference below zero.
+- The gender gap on the public-role items is larger than in CGSS in seven of
+  the eight cells. Whether the model keeps the larger gender gap on housework
+  differs by cell.
+- This is the subgroup counterpart of the A425 result: the model tends to give
+  the whole battery one set of social gradients. Many
+  coefficients are compared here, so only patterns that hold across cells are
+  described.
+
+*Survey-trained comparator at the response level.* Five draws per profile
+from the out-of-fold HGB distributions give a response-level A425 coherence of
+0.08, the median for human samples of 100 per wave being 0.10. A generator
+whose distributions barely differ between profiles produces low response-level
+correlations whatever its structure, so values near the human range in the
+cells without history are not evidence of a correct structure.
+
+<!-- HUMANHIST -->
+
 **What v2 does not show**
 
 - v2 is not a replication or validation of v1. Beyond the thinking context,
   the designs differ in the system prompt, in the user prompt, in decoding (v1
   sampled at T = 0.7 and top-p = 0.9; v2 reads T = 1 probabilities), and in
-  answer history (v2 conditions on the most probable earlier answers).
-- Still pending: the sampled-history robustness check (five history paths per
-  profile).
+  answer history.
+- The exploratory analyses were specified after the preregistered results were
+  known and should be read as such.
 - The results describe one 4-bit local model and do not generalize to other
   models or quantizations.
 
@@ -603,6 +667,10 @@ survey-llm-eval/
   `config_qwen35_lmstudio.json`
 - legacy comparison setup: `qwen3:8b` through Ollama, configured in
   `config_ollama_qwen3_8b.json`
+- v2 probability audit: MLX 0.32.3 and mlx-lm 0.31.3 on an Apple M4 with 24 GB,
+  weights `lmstudio-community/Qwen3.5-9B-MLX-4bit`; Part 3 models with lavaan
+  0.7-3, semTools 0.5.10, and mirt 1.48; the exploratory HGB with history
+  with scikit-learn 1.7.2 and scipy 1.14.1 (see `ml/README.md`)
 
 ## Main outputs
 
@@ -626,7 +694,9 @@ survey-llm-eval/
 
 Earlier manuscript versions based on the legacy Qwen3-8B run are kept outside
 this public repository. The Qwen3.5-9B showcase manuscript is the current
-reference version.
+reference version. The Chinese paper and the forum presentation predate the
+October 2026 correction of the v1 call description (thinking mode on, integer
+output only); the English manuscript states the correction.
 
 ## Data and reproducibility boundary
 
