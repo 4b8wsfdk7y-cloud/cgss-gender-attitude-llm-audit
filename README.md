@@ -426,6 +426,8 @@ recorded history ([`output/v2/robustness_*.csv`](output/v2/)).
 | A × C | +0.237 [0.192, 0.286] | +0.207 [0.163, 0.256] | +0.112 |
 | A × B × C | −0.138 [−0.239, −0.044] | −0.197 [−0.290, −0.107] | +0.048 |
 
+![A425 coherence with modal and sampled histories](output/figures/v2_robustness_by_cell.png)
+
 - Answer history remains the largest effect. Conditioning on the most probable
   answer overstates coherence by 0.06–0.12 in three history cells
   (A0-B1-C1: −0.03, interval −0.05 to 0.00), and the history effect falls from
@@ -534,7 +536,12 @@ the aggregate tables in `output/v2/`;
 [`scripts/13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py) run and
 analyze the two v1-prompt cells;
 [`scripts/12_measurement_models.R`](scripts/12_measurement_models.R) fits the
-Part 3 measurement models. Probability extraction and the
+Part 3 measurement models.
+[`scripts/14_analyze_sampled_history.py`](scripts/14_analyze_sampled_history.py)
+analyzes the sampled-history robustness runs and
+[`scripts/20_plot_robustness.R`](scripts/20_plot_robustness.R) draws its
+figure; scripts 15–19 run and analyze the exploratory human-history cells,
+HGB with history, subgroup gradients, and egalitarian-coded item means. Probability extraction and the
 factorial prompts live in
 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py)
 and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py), with

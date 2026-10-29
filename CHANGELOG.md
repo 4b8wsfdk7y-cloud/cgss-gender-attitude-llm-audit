@@ -23,7 +23,8 @@
 - Preregistered robustness check with sampled answer histories: five seeded
   paths per profile in the four history cells
   (`scripts/07_run_logprob_audit.py --history sampled`,
-  `scripts/14_analyze_sampled_history.py`).
+  `scripts/14_analyze_sampled_history.py`, figure from
+  `scripts/20_plot_robustness.R`).
 - Exploratory analyses specified on 2026-10-29: human-history cells that use
   the matched respondent's own earlier answers
   (`scripts/15_run_human_history.py`), gradient boosting with answer history

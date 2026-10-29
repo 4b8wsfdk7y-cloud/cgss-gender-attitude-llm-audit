@@ -120,6 +120,10 @@
   <tr><td>Cells with history</td><td class="num">0.78&ndash;0.92</td><td class="num">0.75&ndash;0.87</td><td class="num">0.36&ndash;0.57</td></tr>
   <tr><td>B: answer-history effect</td><td class="num">+0.379</td><td class="num">+0.309 [0.271, 0.338]</td><td class="num">+0.288</td></tr>
 </table>
+<figure>
+  <img src="assets/v2_robustness_by_cell.png" alt="A425 coherence with modal and sampled answer histories, and for drawn answers">
+  <figcaption>Only drawn answers (triangles) are on the scale of the shaded human band.</figcaption>
+</figure>
 <ul>
   <li>Answer history remains the largest effect. Conditioning on the most probable answer overstates coherence by up to 0.12.</li>
   <li>Drawn answers can be compared with people directly. Without history, the model falls within the range of human samples of 100 per wave (median 0.10, 97.5th percentile 0.22; full CGSS 0.069); with history it gives 0.36&ndash;0.57.</li>
