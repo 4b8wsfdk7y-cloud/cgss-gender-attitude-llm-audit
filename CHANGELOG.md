@@ -9,6 +9,23 @@
   `exploratory_history_dependence.csv` now cover both cells; the H-A1-B1-C1
   rows are unchanged. README, README.zh-CN, the paper, and the results page
   report both cells.
+- `scripts/21_plot_exploratory.R`, which draws four README figures from the
+  aggregate tables: measurement-model loadings, item-mean errors by
+  configuration, subgroup gradients, and the human-history cells.
+
+### Changed
+
+- The v2 section of README.zh-CN now follows the English README section by
+  section, with the same tables and figures.
+
+### Fixed
+
+- Rounding errors in reported values: the A425 log scores of H-A1-B1-C1 and
+  A1-B1-C1 are 3.44 and 5.55 (were 3.45 and 5.56), the H-A1-B1-C1 minus
+  no-history contrast on A425 is +1.76 (was +1.77), and the CGSS
+  urban-residence coefficient for A425 is 0.01 (was 0.02), with 0.19 (was
+  0.20) for the v1 public-role coefficient. The tables in `output/v2/` were
+  correct.
 
 ## 2.0.0 (2026-10-29)
 

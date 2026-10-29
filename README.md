@@ -387,6 +387,8 @@ means more egalitarian ([`output/v2/part3_*.csv`](output/v2/)):
 | v2 modal answers, A1-B1-C1 | 300 | 1.02 | 0.88–0.99 | improper |
 | v2 modal answers, A0-B0-C0 | 300 | 0.57 | −0.28–1.09 | improper; A424 dropped |
 
+![Standardized loadings in CGSS and the v1 answers](output/figures/v2_measurement_loadings.png)
+
 - In every synthetic population, A425 loads on the common factor much more
   strongly than among people: the difference from CGSS is 0.23–0.39 in the v1
   replicates, with all 95% intervals above zero. The modal-answer populations
@@ -473,6 +475,8 @@ error against the wave-averaged CGSS mean:
 | A1-B1-C1 (v2 reference) | −1.22 | −0.23 | −0.69 | −1.03 | −1.56 |
 | A1-B0-C0 (item block, no history, integer) | −0.65 | −0.36 | −0.60 | −1.30 | +0.01 |
 
+![Item-mean errors against CGSS by configuration](output/figures/v2_item_mean_errors.png)
+
 v1's pattern (more egalitarian than CGSS on A421–A424, less on A425) appears
 when the thinking block is open and when only the target item is shown with
 JSON output. In all four cells that show the item block, the model is less
@@ -489,14 +493,16 @@ the weighted full-CGSS regression. Coefficients averaged over waves:
 |---|---:|---:|---:|---:|---:|
 | Female | 0.15 | 0.30 | 0.11–0.58 | 0.17–0.69 | 0.22 / 0.50 |
 | Years of education | 0.055 | 0.019 | 0.017–0.084 | 0.011–0.098 | 0.018 / 0.073 |
-| Urban residence | 0.16 | 0.02 | 0.13–0.36 | 0.03–0.88 | 0.20 / 0.29 |
+| Urban residence | 0.16 | 0.01 | 0.13–0.36 | 0.03–0.88 | 0.19 / 0.29 |
+
+![Subgroup gradients for the public-role items and the housework item](output/figures/v2_subgroup_gradients.png)
 
 - Among CGSS respondents, urban residence and education go with more
   egalitarian answers on the public-role items but hardly with A425, and women
   differ from men more on A425 than on the public-role items.
 - The model extends the social gradients to the housework item. In seven of
   the eight factorial cells the urban-residence coefficient for A425 is
-  0.21–0.88, against 0.02 in CGSS, with every interval for the difference above
+  0.21–0.88, against 0.01 in CGSS, with every interval for the difference above
   zero; v1's sampled answers give 0.29. For education, the public-minus-housework
   difference is +0.036 in CGSS and between −0.070 and +0.015 in every cell, all
   intervals for the difference below zero.
@@ -525,8 +531,8 @@ the way people's answers are related.
 
 | Source | Log score, A422–A424 | Log score, A425 | Slope of A425 on the respondent's A421–A424 mean |
 |---|---:|---:|---:|
-| H-A1-B1-C1 (respondent's history) | 1.66 | 3.45 | 0.65 [0.59, 0.71] |
-| A1-B1-C1 (model's modal history) | 2.34 | 5.56 | 0.20 |
+| H-A1-B1-C1 (respondent's history) | 1.66 | 3.44 | 0.65 [0.59, 0.71] |
+| A1-B1-C1 (model's modal history) | 2.34 | 5.55 | 0.20 |
 | A1-B0-C1 (no history) | 1.94 | 1.68 | 0.15 |
 | H-A0-B1-C0 (respondent's history) | 1.49 | 2.82 | 0.55 [0.49, 0.61] |
 | A0-B1-C0 (model's modal history) | 1.84 | 3.00 | 0.19 |
@@ -535,9 +541,11 @@ the way people's answers are related.
 | HGB without history | 1.41 | 1.25 | 0.05 |
 | CGSS, weighted (observed answers) | | | 0.11 |
 
+![Calibration and history dependence with the respondent's own earlier answers](output/figures/v2_human_history.png)
+
 - In H-A1-B1-C1 the respondent's own answers improve the model's predictions
   of A423 and A424 against the no-history cell (log score −0.37 and −0.45,
-  intervals below zero), but make A425 much worse (+1.77, interval 1.42 to
+  intervals below zero), but make A425 much worse (+1.76, interval 1.42 to
   2.13).
 - In H-A0-B1-C0 they improve the log score on all four items against the
   no-history cell, A425 included (−0.29, interval −0.49 to −0.10), but make
@@ -588,7 +596,9 @@ Part 3 measurement models.
 analyzes the sampled-history robustness runs and
 [`scripts/20_plot_robustness.R`](scripts/20_plot_robustness.R) draws its
 figure; scripts 15–19 run and analyze the exploratory human-history cells,
-HGB with history, subgroup gradients, and egalitarian-coded item means. Probability extraction and the
+HGB with history, subgroup gradients, and egalitarian-coded item means, and
+[`scripts/21_plot_exploratory.R`](scripts/21_plot_exploratory.R) draws the
+measurement-model and exploratory figures. Probability extraction and the
 factorial prompts live in
 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py)
 and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py), with
