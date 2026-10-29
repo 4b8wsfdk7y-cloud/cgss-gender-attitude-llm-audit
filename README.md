@@ -49,7 +49,11 @@ findings, and accompanying paper.
 > that the first audit confounded. It also found that the v1 answers were
 > generated with the model's thinking mode left on. Under the v1 prompt,
 > turning it off moves the A421 mean by about one scale point and roughly
-> doubles the housework item's coherence with the other four. See
+> doubles the housework item's coherence with the other four. With thinking
+> off, the model's own earlier answers are the main source of that coherence
+> (+0.38 on the preregistered estimand, +0.31 when the earlier answers are
+> sampled), and the direction of the item-mean errors changes with the
+> configuration. See
 > [v2: option-probability audit](#v2-option-probability-audit-october-2026).
 
 ## The result in 20 seconds
