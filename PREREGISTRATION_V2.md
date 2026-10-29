@@ -292,3 +292,53 @@ replaying the seeded draws. Its outputs are not analysed.
    profile's option distribution averaged over its five paths.
 7. *Output.* Aggregate tables only, in `output/v2/robustness_*.csv`, written
    by `scripts/14_analyze_sampled_history.py`.
+
+**2026-10-29, three exploratory analyses added after the preregistered ones.**
+Fixed before any of them was run; none changes a preregistered estimand. The
+first audit's subgroup gradients were already known (`output/metrics_subgroup_gradients.csv`).
+All three use the bootstrap of Part 2 (profiles resampled within wave, 2,000
+replicates, seed 20261013) unless stated otherwise.
+
+1. *Human-history cells H-A1-B1-C1 and H-A0-B1-C0*
+   (`scripts/15_run_human_history.py`). The prompts of A1-B1-C1 and
+   A0-B1-C0, except that the history for each item holds the matched CGSS
+   respondent's own answers to the earlier items instead of the model's.
+   Profiles whose respondent lacks a valid answer on any of A421–A425 are
+   excluded (4 of 300). A421 has no history and is taken from the primary
+   run. Thinking disabled, one full forward pass per prompt. For the 296
+   profiles:
+   - (a) *Matched calibration* on A422–A425: mean log score and ranked
+     probability score of the respondent's own answer, against the same
+     cell with modal history and the matching cell without history
+     (A1-B0-C1, A0-B0-C0), with bootstrap intervals for the differences.
+   - (b) *History dependence of A425*: within wave, the Pearson correlation
+     across profiles between the expected A425 score and the mean of the
+     respondent's A421–A424 answers in egalitarian coding (6 − x), averaged
+     over waves; compared with the same quantity for the survey-trained
+     model with history (3b), and descriptively with the response-level
+     correlation among the same respondents and in weighted CGSS.
+2. *Subgroup gradients* (`scripts/17_subgroup_gradients.py`). For each of the
+   eight factorial cells and V1-T1 and V1-T0, within wave: least squares
+   across the 100 profiles of the egalitarian-coded expected score on female,
+   years of education, age in decades (centred within wave), and urban
+   residence, the first audit's specification. Outcomes: the public-role
+   index (mean of A421–A424), household (A425), and each item. Benchmark:
+   the first audit's weighted full-CGSS estimates. Reported per cell and
+   averaged over waves: each coefficient, its difference from CGSS with a 95%
+   interval (bootstrap for the model, a normal draw from the CGSS standard
+   error), and the public-minus-household difference in the female and
+   education coefficients.
+3. *Survey-trained comparators.*
+   - (a) *Response-level coherence of HGB*: five draws per profile from the
+     first audit's out-of-fold HGB distributions, seeded as in the 2026-10-28
+     entry, scored with its outcome R1.
+   - (b) *HGB with history* (`scripts/16_fit_hgb_with_history.py`): for
+     A422–A425, weighted HGB with the first audit's features and
+     hyperparameters plus the respondent's answers to the earlier items,
+     five-fold out of fold on all CGSS respondents with valid answers on
+     those items (the first audit's splitter and seeds), giving predictions
+     for the 296 matched profiles. Compared with HGB without history on the
+     outcomes of 1(a) and 1(b).
+
+The analyses of 1 and 3 are in `scripts/18_analyze_history_comparisons.py`.
+Outputs are aggregate tables in `output/v2/exploratory_*.csv`.
