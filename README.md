@@ -291,8 +291,9 @@ profile bootstrap replicates drawn within wave.
   exploratory supervised HGB baseline gives 0.45); cells with history range
   from 0.78 to 0.92. The CGSS response-level value (0.07) is computed on
   individual answers, not expected scores, and is not directly comparable.
-- Output format has no detectable main effect; its effect depends on whether
-  the item block is visible.
+- Output format has no detectable main effect with modal histories; its
+  effect depends on whether the item block is visible. With sampled histories
+  the main effect is small and positive (robustness check below).
 - In every cell the matched log score (1.97–3.06) is worse than a uniform guess
   over five options (ln 5 ≈ 1.61): the model is confidently wrong about
   individual respondents. The best ranked probability score is 0.191
@@ -397,7 +398,56 @@ means more egalitarian ([`output/v2/part3_*.csv`](output/v2/)):
   relative to the mean of the other four items is 0.17 in CGSS and 0.30–0.53
   in the v1 replicates.
 
-<!-- ROBUST -->
+**Preregistered robustness check: sampled answer histories (29 October 2026)**
+
+The factorial cells with history condition on the most probable earlier
+answers. The robustness check, specified in the preregistration's 2026-10-28
+entry before the run, replaces them with five seeded draws per profile from the
+model's own option distributions: 300 profiles × 4 history cells × 5 paths × 5
+items = 30,000 scored prompts. Replaying the seeded draws reproduces every
+recorded history ([`output/v2/robustness_*.csv`](output/v2/)).
+
+| Cell | Modal history, expected scores | Sampled history, expected scores (R2) | Drawn answers, response level (R1) |
+|---|---:|---:|---:|
+| A0-B0-C0 | 0.52 | no history | 0.13 |
+| A0-B0-C1 | 0.39 | no history | 0.16 |
+| A1-B0-C0 | 0.40 | no history | 0.09 |
+| A1-B0-C1 | 0.58 | no history | 0.21 |
+| A0-B1-C0 | 0.87 | 0.75 | 0.37 |
+| A0-B1-C1 | 0.78 | 0.75 | 0.44 |
+| A1-B1-C0 | 0.84 | 0.76 | 0.36 |
+| A1-B1-C1 | 0.92 | 0.87 | 0.57 |
+
+| Effect | Modal history | Sampled history (R2) | Response level (R1) |
+|---|---:|---:|---:|
+| B: answer history | +0.379 [0.339, 0.410] | +0.309 [0.271, 0.338] | +0.288 |
+| A: item block visible | +0.048 [0.022, 0.074] | +0.048 [0.021, 0.074] | +0.035 |
+| C: JSON output | +0.013 [−0.013, 0.039] | +0.042 [0.015, 0.070] | +0.106 |
+| A × C | +0.237 [0.192, 0.286] | +0.207 [0.163, 0.256] | +0.112 |
+| A × B × C | −0.138 [−0.239, −0.044] | −0.197 [−0.290, −0.107] | +0.048 |
+
+- Answer history remains the largest effect. Conditioning on the most probable
+  answer overstates coherence by 0.06–0.12 in three history cells
+  (A0-B1-C1: −0.03, interval −0.05 to 0.00), and the history effect falls from
+  0.38 to 0.31.
+- At the response level, the four cells without history give 0.09–0.21, within
+  the range of human samples of 100 per wave (median 0.10, 97.5th percentile
+  0.22); the full weighted CGSS value is 0.069. The four cells with history
+  give 0.36–0.57, above that range and above v1 (0.27), whose answers were
+  generated with the thinking block open. The survey-trained HGB comparator
+  gives 0.08.
+- The output-format result is not robust: with sampled histories JSON output
+  has a small positive main effect (+0.04, interval 0.02 to 0.07). The
+  three-way interaction changes sign at the response level.
+- With sampled histories, item-mean errors against CGSS change little (mean
+  absolute error 0.35–0.97 across the history cells, against 0.31–1.06), and
+  the between-profile variance ratio falls in three of the four cells.
+- Percentile intervals for response-level correlations lie above the point
+  estimates when the correlations are small (A1-B0-C0: 0.090, interval 0.099
+  to 0.141), because resampled duplicate profiles inflate absolute
+  correlations near zero. Response-level effects are therefore reported
+  without intervals here; the computed intervals are in
+  `robustness_effects.csv`.
 
 **Exploratory analyses (added 29 October 2026)**
 

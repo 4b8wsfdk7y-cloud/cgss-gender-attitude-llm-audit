@@ -55,6 +55,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hgb-history", required=True, help="hgb_with_history_matched.csv")
     parser.add_argument("--ml-data", required=True, help="human_ml_input.csv, for weighted CGSS slopes")
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--human-cells", nargs="+", default=list(PAIRS),
+                        help="human-history cells to analyse (default: both)")
     parser.add_argument("--paths", type=int, default=5)
     parser.add_argument("--draw-seed", type=int, default=20261013)
     parser.add_argument("--replicates", type=int, default=2000)
@@ -127,8 +129,12 @@ def main() -> int:
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     items = list(item_ids())
+    unknown = sorted(set(args.human_cells) - set(PAIRS))
+    if unknown:
+        raise SystemExit(f"Unknown human-history cells: {unknown}")
+    pairs = {name: PAIRS[name] for name in PAIRS if name in args.human_cells}
 
-    cells = sorted({c for pair in PAIRS.values() for c in pair})
+    cells = sorted({c for pair in pairs.values() for c in pair})
     _, all_profiles, probs, _ = run09.load_ledger(Path(args.ledger), cells)
     matched = {r["profile_id"]: r for r in run09.read_csv(Path(args.matched))}
     keep = [i for i, (_, pid) in enumerate(all_profiles)
@@ -144,10 +150,10 @@ def main() -> int:
     history_mean = (6 - observed[:, :4]).mean(axis=1)       # egalitarian coding
 
     # Human-history distributions; A421 comes from the matching modal-history cell.
-    h_names = list(PAIRS)
+    h_names = list(pairs)
     h_probs = np.full((len(h_names), len(pids), len(items), len(SCALE)), np.nan)
     for name in h_names:
-        h_probs[h_names.index(name), :, 0] = probs[cells.index(PAIRS[name][0]), :, 0]
+        h_probs[h_names.index(name), :, 0] = probs[cells.index(pairs[name][0]), :, 0]
     h_records = 0
     for line in Path(args.human_history_ledger).open(encoding="utf-8"):
         r = json.loads(line)
@@ -171,7 +177,7 @@ def main() -> int:
 
     # Sources for 1(a) and 1(b): (label, distributions over profiles x items x options).
     sources = []
-    for name, (modal_cell, plain_cell) in PAIRS.items():
+    for name, (modal_cell, plain_cell) in pairs.items():
         sources += [(f"{name} (respondent history)", h_probs[h_names.index(name)]),
                     (f"{modal_cell} (model's modal history)", probs[cells.index(modal_cell)]),
                     (f"{plain_cell} (no history)", probs[cells.index(plain_cell)])]
@@ -216,7 +222,7 @@ def main() -> int:
     run09.write_csv(out / "exploratory_human_history_calibration.csv", rows)
 
     contrasts = []
-    for name, (modal_cell, plain_cell) in PAIRS.items():
+    for name, (modal_cell, plain_cell) in pairs.items():
         h = labels.index(f"{name} (respondent history)")
         contrasts += [(h, labels.index(f"{modal_cell} (model's modal history)")),
                       (h, labels.index(f"{plain_cell} (no history)"))]
@@ -293,7 +299,7 @@ def main() -> int:
         "undefined_correlations": undefined, "profiles_without_hgb_prediction_items": missing}])
 
     metadata = {"profiles": len(pids), "profiles_excluded_missing_answers": len(all_profiles) - len(pids),
-                "human_history_records": h_records, "cgss_weighted_by_wave": cgss,
+                "human_history_cells": pairs, "human_history_records": h_records, "cgss_weighted_by_wave": cgss,
                 "coding": "calibration on the original scale; dependence in egalitarian coding",
                 "bootstrap_replicates": args.replicates, "bootstrap_seed": args.seed,
                 "hgb_draw_seed": args.draw_seed}

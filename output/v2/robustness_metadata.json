@@ -1,0 +1,20 @@
+{
+  "ledger_sha256": "6940c55829066f9e0bd1edf77638e4f01cd3d3e88c908b52d1d1e49a4be6c4d8",
+  "ledger_records": 12000,
+  "sampled_ledger_sha256": "d9aea716417ac5803bf22d8314cdddd3056f65c5d73db61ee3eaafb7c08c737b",
+  "sampled_records": 30000,
+  "profiles": 300,
+  "paths": 5,
+  "draw_seed": 20261013,
+  "history_cells": [
+    "A0-B1-C0",
+    "A0-B1-C1",
+    "A1-B1-C0",
+    "A1-B1-C1"
+  ],
+  "replay_check": "every recorded history equals the replayed seeded draws",
+  "undefined_response_level_correlations": 0,
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled with replacement within wave; all paths, items, and cells move together"
+}

@@ -343,6 +343,17 @@ replicates, seed 20261013) unless stated otherwise.
 The analyses of 1 and 3 are in `scripts/18_analyze_history_comparisons.py`.
 Outputs are aggregate tables in `output/v2/exploratory_*.csv`.
 
+**2026-10-29, human-history cells: run order, before any human-history
+probabilities were analysed.** The first launch scored the two cells profile
+by profile, at about a third of the speed of the earlier runs. To have one
+cell complete for all 296 profiles, the run was restarted with
+`--cells H-A1-B1-C1` (and a smaller MLX buffer-cache limit, which does not
+enter the computation); the ledger is append-only and records already written
+were kept. H-A0-B1-C0 is completed afterwards with the same script. Item 1 is
+reported for H-A1-B1-C1 first (`scripts/18_analyze_history_comparisons.py
+--human-cells H-A1-B1-C1`); H-A0-B1-C0 is analysed only once all its 296
+profiles are scored, and no partial H-A0-B1-C0 result is reported.
+
 *Addendum to item 1(b), written before the human-history cells were run.*
 Also reported: the least-squares slope of A425 on the mean of the
 respondent's A421–A424 answers, within wave and averaged over waves. Unlike a
