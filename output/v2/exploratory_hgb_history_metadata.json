@@ -1,0 +1,52 @@
+{
+  "data_sha256": "87745c6550b5c817c7499574a62c1a519874e31f225a29f3cc7034f2cd90712b",
+  "config": {
+    "seed": 20260702,
+    "folds": 5,
+    "llm_model_label": "qwen3_5_9b_neutral",
+    "llm_responses": "../output_qwen35/responses.csv",
+    "outcomes": [
+      "eq_a421",
+      "eq_a422",
+      "eq_a423",
+      "eq_a424",
+      "eq_a425"
+    ],
+    "numeric_features": [
+      "survey_year",
+      "female",
+      "age",
+      "educ_years",
+      "urban_hukou",
+      "urban_residence",
+      "partnership",
+      "econ_status"
+    ],
+    "categorical_features": [
+      "prov",
+      "marital_group"
+    ],
+    "logistic": {
+      "C": 1.0,
+      "max_iter": 600,
+      "solver": "saga"
+    },
+    "hist_gradient_boosting": {
+      "learning_rate": 0.06,
+      "max_iter": 120,
+      "max_leaf_nodes": 15,
+      "min_samples_leaf": 40,
+      "l2_regularization": 0.1
+    }
+  },
+  "model": "hist_gradient_boosting",
+  "coding": "egalitarian (eq_*), history features are the earlier eq_* items",
+  "matched_predictions": 1190,
+  "matched_predictions_sha256": "d3ba4689b5a8753d6edf594bb1bd89effefc86c504bb20e3a13a76522518f3f1",
+  "versions": {
+    "scikit-learn": "1.7.2",
+    "scipy": "1.14.1",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3"
+  }
+}
