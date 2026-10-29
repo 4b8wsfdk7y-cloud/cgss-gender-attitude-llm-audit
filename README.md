@@ -515,7 +515,37 @@ whose distributions barely differ between profiles produces low response-level
 correlations whatever its structure, so values near the human range in the
 cells without history are not evidence of a correct structure.
 
-<!-- HUMANHIST -->
+*Human-history cell* ([`output/v2/exploratory_human_history_calibration.csv`](output/v2/exploratory_human_history_calibration.csv),
+[`exploratory_history_dependence.csv`](output/v2/exploratory_history_dependence.csv)).
+H-A1-B1-C1 uses the A1-B1-C1 prompt, but the history for each item holds the
+matched CGSS respondent's own answers to the earlier items (296 profiles with
+all five answers; 1,184 forward passes). It asks whether the model, given a
+person's real answers, uses them the way people's answers are related.
+
+| Source | Log score, A422–A424 | Log score, A425 | Slope of A425 on the respondent's A421–A424 mean |
+|---|---:|---:|---:|
+| H-A1-B1-C1 (respondent's history) | 1.66 | 3.45 | 0.65 [0.59, 0.71] |
+| A1-B1-C1 (model's modal history) | 2.34 | 5.56 | 0.20 |
+| A1-B0-C1 (no history) | 1.94 | 1.68 | 0.15 |
+| HGB with respondent's history | 1.23 | 1.15 | 0.09 [0.04, 0.14] |
+| HGB without history | 1.41 | 1.25 | 0.05 |
+| CGSS, weighted (observed answers) | | | 0.11 |
+
+- The respondent's own answers improve the model's predictions of A423 and
+  A424 against the no-history cell (log score −0.37 and −0.45, intervals
+  below zero), but make A425 much worse (+1.77, interval 1.42 to 2.13). HGB
+  with the same history improves on every item, A425 included (−0.095).
+- Given a person's real answers, the model moves its A425 prediction with
+  the mean of those answers at a slope of 0.65, about six times the CGSS slope
+  (0.11) and 0.56 above HGB with history (interval 0.49 to 0.62). Slopes of
+  expected scores and of observed answers estimate the same conditional mean,
+  so this comparison is on one scale.
+- The excess coherence is therefore not only the model building on its own
+  earlier errors: with its own earlier answers or with a respondent's, it
+  treats the housework item as following from them.
+- The second human-history cell, H-A0-B1-C0, was still being scored when this
+  was written; the preregistration's 2026-10-29 run-order entry fixes that it
+  is analysed only once complete.
 
 **What v2 does not show**
 

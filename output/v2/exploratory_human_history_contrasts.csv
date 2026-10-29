@@ -1,0 +1,31 @@
+contrast,metric,item,estimate,ci95_low,ci95_high,interval_excludes_zero
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a422,-0.19226594185346513,-0.34568319082918747,-0.03793703183886366,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a423,-0.6663700228816543,-0.8371753125782483,-0.49304909098709415,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a424,-1.1962015462231606,-1.4242552115354035,-0.9610133353691211,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a425,-2.110036290225071,-2.3819889692230114,-1.8421311859655634,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a422_a425,-1.0412184502958381,-1.1891239520033052,-0.9003639240765982,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a422,-0.02275167201490194,-0.04303794625837316,-0.0023408782882501896,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a423,-0.059792371501417585,-0.0767705385824845,-0.042682106819507556,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a424,-0.07635659294305028,-0.0986143898796417,-0.0532984462421137,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a425,-0.0791892357279449,-0.09667582825178625,-0.06168828347644336,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a422_a425,-0.05952246804682865,-0.0729118572667363,-0.04601632845548968,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a422,-0.025052522642176944,-0.18084273594987454,0.13715063068225003,False
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a423,-0.36898214396431617,-0.5019946309415333,-0.2328804505363228,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a424,-0.4509682219274038,-0.6016832199597932,-0.2978106122116411,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a425,1.764626209557488,1.4212022279458272,2.1342604573244963,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a422_a425,0.22990583025589761,0.10077888742555743,0.3640194568062558,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a422,-0.034198541437359176,-0.059618219058018895,-0.009223826826075972,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a423,-0.07590019934191047,-0.09490393754191086,-0.05684252003467441,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a424,-0.12143670425407929,-0.143579244899825,-0.09909353296864482,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a425,0.1277413975380977,0.09592659788171676,0.1616022941013212,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a422_a425,-0.025948511873812807,-0.042388154611779874,-0.009201499775639829,True
+HGB with respondent history minus HGB without history,log_score,a422,-0.2106122609548462,-0.28983498592323576,-0.1325876748532476,True
+HGB with respondent history minus HGB without history,log_score,a423,-0.15235382825494548,-0.22071772448203128,-0.08584700852868594,True
+HGB with respondent history minus HGB without history,log_score,a424,-0.1914209008720238,-0.2600505388651719,-0.12190356272822023,True
+HGB with respondent history minus HGB without history,log_score,a425,-0.09545389257817116,-0.15408771678458186,-0.03591602722401347,True
+HGB with respondent history minus HGB without history,log_score,a422_a425,-0.16246022066499655,-0.2050825835727949,-0.11793516449767255,True
+HGB with respondent history minus HGB without history,rps,a422,-0.028964936633590732,-0.040463389807694095,-0.017987960573338305,True
+HGB with respondent history minus HGB without history,rps,a423,-0.024400817725019425,-0.033512893277194124,-0.013869311565399969,True
+HGB with respondent history minus HGB without history,rps,a424,-0.0194653635782783,-0.027595467768024635,-0.010992484726341628,True
+HGB with respondent history minus HGB without history,rps,a425,-0.007844242389878589,-0.013900264595149057,-0.0016537565331706339,True
+HGB with respondent history minus HGB without history,rps,a422_a425,-0.020168840081691786,-0.02569980981911004,-0.014228313419412959,True

@@ -1,0 +1,2 @@
+source,response_level,ci95_low,ci95_high,wave_2012,wave_2018,wave_2021,undefined_correlations,profiles_without_hgb_prediction_items
+"HGB out-of-fold distributions, five draws per profile",0.07680227730814872,0.09108833945401996,0.13007190319944284,0.08086384152704844,0.07155658972978395,0.07798640066761378,0,20
