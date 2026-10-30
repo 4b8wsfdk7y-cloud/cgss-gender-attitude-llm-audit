@@ -32,6 +32,9 @@
   the items (`output/v2/exploratory_exposure_*.csv`). One generated line is
   offensive and is replaced in the public recall table by a placeholder with
   its SHA-256; a rerun reproduces the line locally.
+- README and README.zh-CN report both analyses, with a figure drawn by
+  `scripts/24_plot_calibration.R` (`output/figures/v2_recalibration.png`).
+  The paper and the results page do not yet include them.
 
 ### Fixed
 

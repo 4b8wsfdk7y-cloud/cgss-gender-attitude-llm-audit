@@ -568,6 +568,87 @@ the way people's answers are related.
 - H-A0-B1-C0 was scored after H-A1-B1-C1 and analysed once all 296 profiles
   were complete, as fixed in the preregistration's 2026-10-29 run-order entry.
 
+**Two further exploratory analyses (added 29 October 2026, evening)**
+
+Specified in the preregistration's evening entry of 29 October before either
+was run.
+
+*Recalibrating on a small human sample* ([`output/v2/exploratory_calibration_summary.csv`](output/v2/exploratory_calibration_summary.csv),
+[`exploratory_calibration_gradients.csv`](output/v2/exploratory_calibration_gradients.csv),
+[`exploratory_calibration_history_slope.csv`](output/v2/exploratory_calibration_history_slope.csv)).
+A common proposal is to correct synthetic respondents with the answers of a
+few real ones. For each cell and item, the option distributions are
+recalibrated on the answers of n matched respondents (50, 100, 200, or all 296)
+by penalised maximum likelihood, in two ways: category offsets (M1), or
+offsets and an inverse temperature (M2). Each of 1,000 replicates resamples
+profiles within wave and draws a new calibration sample; values are medians
+over replicates, with 95% intervals. For the eight factorial cells the table
+gives the range of cell medians and, in parentheses, the number of cells whose
+interval for the difference from CGSS excludes zero.
+
+| | Uncalibrated | M1, n = 100 | M2, n = 100 | CGSS |
+|---|---:|---:|---:|---:|
+| Mean absolute error of item means | 0.30–1.05 | 0.13–0.15 | 0.13–0.14 | |
+| Between-profile variance ratio | 0.04–0.41 | 0.09–0.37 | 0.01–0.04 | |
+| A425 slope on the respondent's A421–A424 mean, H-A1-B1-C1 | 0.65 [0.59, 0.71] | 0.59 [0.42, 0.76] | 0.15 [0.01, 0.30] | 0.11 |
+| A425 slope on the respondent's A421–A424 mean, H-A0-B1-C0 | 0.55 [0.49, 0.61] | 0.30 [0.17, 0.45] | 0.13 [0.04, 0.23] | 0.11 |
+| A425 on urban residence | 0.03–0.88 (7/8) | 0.04–0.68 (7/8) | 0.02–0.07 (0/8) | 0.01 |
+| A425 on female | 0.17–0.68 (6/8) | 0.27–0.55 (5/8) | 0.02–0.15 (7/8) | 0.30 |
+| Public-role index on years of education | 0.018–0.085 (8/8) | 0.021–0.074 (3/8) | 0.009–0.024 (8/8) | 0.055 |
+
+![Recalibration on a few real answers: item means, history slope, and two A425 gradients](output/figures/v2_recalibration.png)
+
+- Offsets alone bring the item means close to CGSS with 100 respondents. They
+  move every profile in the same direction, so the structural errors stay:
+  the urban gradient on A425 is still off in seven of eight cells, and the
+  A425 slopes of 0.59 and 0.30 are 5.5 and 2.8 times the CGSS slope.
+- Adding a temperature removes the spurious structure: the slopes fall to
+  0.15 and 0.13, with intervals for the difference from CGSS that include
+  zero, and the urban gradient on A425 returns to the CGSS level. It does so
+  by flattening the profiles. The between-profile variance ratio falls to
+  0.01–0.04, and real gradients go with it: the gender gap on A425 falls from
+  0.30 in CGSS to 0.02–0.15, and the education gradient on the public-role
+  items from 0.055 to 0.009–0.024.
+- The fitted inverse temperatures are 0.01–0.53 at n = 100 and below 0.31 for
+  A425 in every cell; the recalibrated distributions keep little of the
+  model's profile-level information. The inverse temperature was not
+  constrained to be positive, and at n = 296 one fit (A424 in A1-B0-C0) is
+  slightly below zero.
+- A few real answers thus repair the margins but not the structure, and the
+  recalibration that removes the spurious structure also removes the real
+  one, as the preregistration entry anticipated. The calibration samples come
+  from the respondents whose profiles were scored, the most favourable case
+  for a researcher.
+- Uncalibrated values here use the 296 profiles and are bootstrap medians, so
+  they can differ in the second decimal from the tables above.
+
+*Questionnaire-exposure probe* ([`output/v2/exploratory_exposure_order_test.csv`](output/v2/exploratory_exposure_order_test.csv),
+[`exploratory_exposure_recall.csv`](output/v2/exploratory_exposure_recall.csv)).
+Whether the model has seen the A42 battery had not been tested. The probe
+scores the five items, one per line, in all 120 orders, under a CGSS header
+and a neutral header, and asks how the CGSS order ranks. A positive control
+does the same for the first five core socialist values, whose order the model
+should know. Raw text, no chat template, one forward pass per order.
+
+| Text | Rank of the canonical order among 120 | Permutation p | Log-probability margin over the median order |
+|---|---:|---:|---:|
+| Positive control (社会主义核心价值观) | 1 | 0.008 | +14.43 |
+| A42 battery, CGSS header | 85 | 0.71 | −2.33 |
+| A42 battery, neutral header | 23 | 0.19 | +4.18 |
+
+- The probe detects a memorised order: the control ranks first. Under the
+  CGSS header the CGSS order is less probable than the median order, and it
+  ranks higher under the neutral header. By the preregistered reading there
+  is no evidence that the model has seen texts listing the battery in CGSS
+  order.
+- Given the first k items in CGSS order, the model reproduced none of the
+  five items under either header; it wrote other gender-role statements. One
+  completion is offensive and is masked in the public table, with its
+  SHA-256 kept.
+- The probe covers the questionnaire text only. Whether published CGSS
+  response distributions entered the training data cannot be tested this
+  way.
+
 **What v2 does not show**
 
 - v2 is not a replication or validation of v1. Beyond the thinking context,
@@ -598,7 +679,12 @@ analyzes the sampled-history robustness runs and
 figure; scripts 15–19 run and analyze the exploratory human-history cells,
 HGB with history, subgroup gradients, and egalitarian-coded item means, and
 [`scripts/21_plot_exploratory.R`](scripts/21_plot_exploratory.R) draws the
-measurement-model and exploratory figures. Probability extraction and the
+measurement-model and exploratory figures;
+[`scripts/22_calibrate_with_human_sample.py`](scripts/22_calibrate_with_human_sample.py)
+runs the recalibration analysis and
+[`scripts/24_plot_calibration.R`](scripts/24_plot_calibration.R) draws its figure;
+[`scripts/23_probe_questionnaire_exposure.py`](scripts/23_probe_questionnaire_exposure.py)
+runs the exposure probe and needs only the local model. Probability extraction and the
 factorial prompts live in
 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py)
 and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py), with

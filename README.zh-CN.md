@@ -288,13 +288,49 @@ flowchart LR
 - 所以过度一致不只是模型在自己之前的错误上继续延伸：无论看到的是自己的回答还是受访者的回答，模型都让家务题跟着前四题走。
 - H-A0-B1-C0 在 H-A1-B1-C1 之后运行，按预注册 2026-10-29 的运行顺序条目，296 个画像全部跑完后才分析。
 
+**另外两项探索性分析（2026 年 10 月 29 日晚补充）**
+
+两项都在运行之前写进了预注册 10 月 29 日晚的条目。
+
+*用少量真人样本重新校准*（[`output/v2/exploratory_calibration_summary.csv`](output/v2/exploratory_calibration_summary.csv)、[`exploratory_calibration_gradients.csv`](output/v2/exploratory_calibration_gradients.csv)、[`exploratory_calibration_history_slope.csv`](output/v2/exploratory_calibration_history_slope.csv)）。一种常见的提议是用少量真人的回答校正合成受访者。这里对每个条件的每道题，用 n 个匹配受访者（50、100、200 人或全部 296 人）的回答，以惩罚最大似然重新校准选项分布，分两种做法：只加类别偏移（M1），以及同时加类别偏移和逆温度（M2）。1,000 次重复中，每次在期内重抽画像，再重新抽取校准样本；表中数值是各次重复的中位数和 95% 区间。8 个析因条件给出各条件中位数的范围，括号里是与 CGSS 之差的区间不含 0 的条件数。
+
+| | 不校准 | M1，n = 100 | M2，n = 100 | CGSS |
+|---|---:|---:|---:|---:|
+| 题目均值的平均绝对误差 | 0.30–1.05 | 0.13–0.15 | 0.13–0.14 | |
+| 画像间方差比 | 0.04–0.41 | 0.09–0.37 | 0.01–0.04 | |
+| A425 对受访者 A421–A424 均值的斜率，H-A1-B1-C1 | 0.65 [0.59, 0.71] | 0.59 [0.42, 0.76] | 0.15 [0.01, 0.30] | 0.11 |
+| A425 对受访者 A421–A424 均值的斜率，H-A0-B1-C0 | 0.55 [0.49, 0.61] | 0.30 [0.17, 0.45] | 0.13 [0.04, 0.23] | 0.11 |
+| A425 对城镇居住的系数 | 0.03–0.88（7/8） | 0.04–0.68（7/8） | 0.02–0.07（0/8） | 0.01 |
+| A425 对女性的系数 | 0.17–0.68（6/8） | 0.27–0.55（5/8） | 0.02–0.15（7/8） | 0.30 |
+| 公共角色指数对受教育年限的系数 | 0.018–0.085（8/8） | 0.021–0.074（3/8） | 0.009–0.024（8/8） | 0.055 |
+
+![用少量真人回答重新校准：题目均值、历史斜率和 A425 的两个梯度](output/figures/v2_recalibration.png)
+
+- 只加偏移时，100 个真人回答就能让题目均值接近 CGSS。偏移让所有画像朝同一方向移动，所以结构上的误差留了下来：A425 的城乡梯度在 8 个条件中仍有 7 个偏离 CGSS，两个真人历史条件的斜率为 0.59 和 0.30，分别是 CGSS 的 5.5 倍和 2.8 倍。
+- 加上逆温度后，虚假的结构消失了：斜率降到 0.15 和 0.13，与 CGSS 之差的区间包含 0，A425 的城乡梯度也回到 CGSS 的水平。这是靠压平画像之间的差别做到的。画像间方差比降到 0.01–0.04，真实存在的梯度也随之消失：A425 上的性别差距由 CGSS 的 0.30 降到 0.02–0.15，公共角色题的教育梯度由 0.055 降到 0.009–0.024。
+- n = 100 时拟合出的逆温度为 0.01–0.53，A425 在每个条件中都低于 0.31，校准后的分布保留的画像层面信息很少。逆温度没有限定为正数，n = 296 时有一次拟合（A1-B0-C0 的 A424）略小于 0。
+- 因此，少量真人回答能修好边际分布，修不好结构；能去掉虚假结构的校准，也同时去掉了真实的结构。这与预注册条目中写下的预期一致。校准样本来自被打分画像对应的受访者，对研究者来说是最有利的情形。
+- 这里的不校准数值基于 296 个画像，并取 bootstrap 中位数，所以和前面各表可能在第二位小数上不同。
+
+*问卷曝光探针*（[`output/v2/exploratory_exposure_order_test.csv`](output/v2/exploratory_exposure_order_test.csv)、[`exploratory_exposure_recall.csv`](output/v2/exploratory_exposure_recall.csv)）。此前没有检验过模型是否见过 A42 题组。探针把五道题按每行一题排成全部 120 种顺序，分别放在 CGSS 标题和中性标题下计算概率，看 CGSS 的顺序排在第几。正面对照对社会主义核心价值观的前五个词做同样的检验，模型应当知道它们的顺序。探针使用原始文本，不套对话模板，每种顺序做一次前向计算。
+
+| 文本 | 标准顺序在 120 种顺序中的排名 | 置换 p 值 | 相对中位顺序的对数概率差 |
+|---|---:|---:|---:|
+| 正面对照（社会主义核心价值观） | 1 | 0.008 | +14.43 |
+| A42 题组，CGSS 标题 | 85 | 0.71 | −2.33 |
+| A42 题组，中性标题 | 23 | 0.19 | +4.18 |
+
+- 探针能测出背过的顺序：正面对照排第一。CGSS 标题下，CGSS 顺序的概率低于中位顺序，在中性标题下反而排得更靠前。按预注册的判读标准，没有证据表明模型见过按 CGSS 顺序列出这组题的文本。
+- 给出按 CGSS 顺序排列的前 k 道题后，两种标题下模型都没有写出五道题中的任何一道，写出的是其他关于性别角色的说法。其中一条生成内容具有冒犯性，在公开表格中打了码，保留了它的 SHA-256。
+- 探针只检验问卷文本。CGSS 已发表的回答分布是否进入了训练数据，用这种方法无法检验。
+
 **第二版不能说明的问题**
 
 - 第二版不是对第一版的复现或验证。除思考模式外，两版在系统提示词、用户提示词、解码设置（第一版在 T = 0.7、top-p = 0.9 下抽样，第二版读取 T = 1 的概率）和作答历史上都有差别。
 - 探索性分析是在预注册结果已知之后设定的，应按探索性结果理解。
 - 结果只描述一个 4-bit 本地模型，不能推广到其他模型或量化方式。
 
-**代码。** [`scripts/07_run_logprob_audit.py`](scripts/07_run_logprob_audit.py) 运行前向计算，写入只追加的记录文件（append-only ledger）；[`scripts/08_export_human_benchmark.R`](scripts/08_export_human_benchmark.R) 导出加权真人基准；[`scripts/09_analyze_logprob_audit.py`](scripts/09_analyze_logprob_audit.py) 计算估计量和 bootstrap 区间；[`scripts/10_plot_v2.R`](scripts/10_plot_v2.R) 用 `output/v2/` 中的聚合表画主要结果的两张图；[`scripts/11_run_v1_context_cells.py`](scripts/11_run_v1_context_cells.py) 和 [`scripts/13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py) 运行并分析两个第一版提示词条件；[`scripts/12_measurement_models.R`](scripts/12_measurement_models.R) 估计第 3 部分的测量模型；[`scripts/14_analyze_sampled_history.py`](scripts/14_analyze_sampled_history.py) 分析抽样历史稳健性检验，[`scripts/20_plot_robustness.R`](scripts/20_plot_robustness.R) 画它的图；脚本 15–19 运行和分析探索性的真人历史条件、带历史的 HGB、子群体梯度和按平等方向计分的题目均值；[`scripts/21_plot_exploratory.R`](scripts/21_plot_exploratory.R) 画测量模型和探索性分析的图。选项概率的提取和析因提示词在 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py) 和 [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py) 中，测试在 `tests/test_probabilities.py` 和 `tests/test_factorial.py`。运行这些脚本需要获授权的 CGSS 衍生文件。
+**代码。** [`scripts/07_run_logprob_audit.py`](scripts/07_run_logprob_audit.py) 运行前向计算，写入只追加的记录文件（append-only ledger）；[`scripts/08_export_human_benchmark.R`](scripts/08_export_human_benchmark.R) 导出加权真人基准；[`scripts/09_analyze_logprob_audit.py`](scripts/09_analyze_logprob_audit.py) 计算估计量和 bootstrap 区间；[`scripts/10_plot_v2.R`](scripts/10_plot_v2.R) 用 `output/v2/` 中的聚合表画主要结果的两张图；[`scripts/11_run_v1_context_cells.py`](scripts/11_run_v1_context_cells.py) 和 [`scripts/13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py) 运行并分析两个第一版提示词条件；[`scripts/12_measurement_models.R`](scripts/12_measurement_models.R) 估计第 3 部分的测量模型；[`scripts/14_analyze_sampled_history.py`](scripts/14_analyze_sampled_history.py) 分析抽样历史稳健性检验，[`scripts/20_plot_robustness.R`](scripts/20_plot_robustness.R) 画它的图；脚本 15–19 运行和分析探索性的真人历史条件、带历史的 HGB、子群体梯度和按平等方向计分的题目均值；[`scripts/21_plot_exploratory.R`](scripts/21_plot_exploratory.R) 画测量模型和探索性分析的图；[`scripts/22_calibrate_with_human_sample.py`](scripts/22_calibrate_with_human_sample.py) 运行重新校准分析，[`scripts/24_plot_calibration.R`](scripts/24_plot_calibration.R) 画它的图；[`scripts/23_probe_questionnaire_exposure.py`](scripts/23_probe_questionnaire_exposure.py) 运行问卷曝光探针，只需要本地模型。选项概率的提取和析因提示词在 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py) 和 [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py) 中，测试在 `tests/test_probabilities.py` 和 `tests/test_factorial.py`。运行这些脚本需要获授权的 CGSS 衍生文件。
 
 ## 公开演示
 
