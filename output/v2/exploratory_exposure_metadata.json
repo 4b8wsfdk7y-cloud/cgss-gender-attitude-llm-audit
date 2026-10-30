@@ -1,0 +1,26 @@
+{
+  "model": "Qwen3.5-9B-MLX-4bit",
+  "git_commit": "6caf209617ea69033b4d8675a7a280ff4e78549a",
+  "headers": {
+    "cgss": "中国综合社会调查（CGSS）问卷\nA42. 您是否同意下列说法？\n",
+    "neutral": "某市居民生活状况调查问卷\nQ12. 您是否同意下列说法？\n"
+  },
+  "control_header": "社会主义核心价值观：",
+  "control_words": [
+    "富强",
+    "民主",
+    "文明",
+    "和谐",
+    "自由"
+  ],
+  "items": [
+    "男人以事业为重，女人以家庭为重",
+    "男性能力天生比女性强",
+    "干得好不如嫁得好",
+    "在经济不景气时，应该先解雇女性员工",
+    "夫妻应该均等分摊家务"
+  ],
+  "max_tokens": 32,
+  "notes": "raw text, no chat template; float32 output projection",
+  "masked_generations": "recall lines whose SHA-256 is in MASKED_SHA256 are replaced by a placeholder; the match columns use the unmasked line"
+}

@@ -1,0 +1,9 @@
+condition,k,target,generated,masked,equals_target,equals_any_item,target_informative
+cgss,1,A422,男人应该比女人更努力,False,False,,True
+cgss,2,A423,性别角色刻板印象,False,False,,False
+cgss,3,A424,男人应该比女人更独立,False,False,,True
+cgss,4,A425,女性应该比男性更温柔,False,False,,True
+neutral,1,A422,男人以家庭为重，女人以社会为重,False,False,,True
+neutral,2,A423,性别角色刻板印象,False,False,,False
+neutral,3,A424,女性应该为家庭牺牲自己的事业,False,False,,True
+neutral,4,A425,[masked: offensive sexual content; sha256 28c2d41d7d59cff5f6f7117080da5588c5203caafe164b9e68b2dc4c42dbea89],True,False,,True

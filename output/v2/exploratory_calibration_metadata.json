@@ -1,0 +1,22 @@
+{
+  "profiles": 296,
+  "excluded_missing_answers": 4,
+  "replicates": 1000,
+  "seed": 20261029,
+  "sizes": [
+    50,
+    100,
+    200,
+    296
+  ],
+  "methods": {
+    "M1": "q \u221d p\u00b7exp(b_k), b_1 = 0",
+    "M2": "q \u221d p^s\u00b7exp(b_k), b_1 = 0"
+  },
+  "penalty": "sum b_k^2/(2*5.0^2) + (s-1)^2/(2*1.0^2)",
+  "cgss_weighted_slope": 0.10635370385152487,
+  "hgb_with_history_slope": 0.08738075700729105,
+  "ledger_sha256": "6940c55829066f9e0bd1edf77638e4f01cd3d3e88c908b52d1d1e49a4be6c4d8",
+  "human_history_ledger_sha256": "afac0d46025bf6be5c3349b119231b48524e3e8ef28f3134117f08e8a9e4b82a",
+  "note": "inverse-temperature table is descriptive and was not pre-specified"
+}

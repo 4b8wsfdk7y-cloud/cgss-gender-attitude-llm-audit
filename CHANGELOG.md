@@ -19,6 +19,20 @@
   section, with the same tables and figures.
 - The results page shows the four new figures under the matching tables.
 
+### Added (2026-10-29 evening, pre-specified in `PREREGISTRATION_V2.md` before running)
+
+- `scripts/22_calibrate_with_human_sample.py`: recalibrates each cell's option
+  distributions on the answers of 50, 100, 200, or all 296 matched
+  respondents, by category offsets (M1) or offsets and an inverse temperature
+  (M2), and recomputes marginal error, between-profile variance, subgroup
+  gradients, and the A425 history slope (`output/v2/exploratory_calibration_*.csv`).
+- `scripts/23_probe_questionnaire_exposure.py`: tests whether the model
+  prefers the CGSS order of the A42 battery among all 120 orders, under a
+  CGSS and a neutral header, with a positive control, and whether it recalls
+  the items (`output/v2/exploratory_exposure_*.csv`). One generated line is
+  offensive and is replaced in the public recall table by a placeholder with
+  its SHA-256; a rerun reproduces the line locally.
+
 ### Fixed
 
 - Rounding errors in reported values: the A425 log scores of H-A1-B1-C1 and
