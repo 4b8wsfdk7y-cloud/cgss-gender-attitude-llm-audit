@@ -360,3 +360,85 @@ respondent's A421–A424 answers, within wave and averaged over waves. Unlike a
 correlation, the slope of an expected score and the slope of observed answers
 estimate the same conditional mean, so the model, HGB, the matched
 respondents, and weighted CGSS can be compared on one scale.
+
+**2026-10-29 (evening), two further exploratory analyses, fixed before either
+was run.** Neither changes a preregistered estimand.
+
+1. *Recalibration with a small human sample*
+   (`scripts/22_calibrate_with_human_sample.py`). The question is whether a
+   researcher who holds the real answers of a few respondents with the same
+   profiles could correct the errors reported above by recalibrating the
+   model's option distributions.
+   - *Profiles and cells.* The 296 profiles whose matched respondent answered
+     all five items; uncalibrated values are recomputed on the same 296. The
+     eight factorial cells, and A425 in the two human-history cells.
+   - *Calibration sample.* n = 50, 100, or 200 matched respondents, drawn by
+     simple random sampling without weights (profiles were drawn with
+     probability proportional to weight within strata, so the matched
+     respondents are close to self-weighting), and all 296 as the most
+     favourable case.
+   - *Methods,* fitted separately for each cell and item, pooled over waves,
+     by penalised maximum likelihood on the sample's answers:
+     (M1) category offsets, q ∝ p·exp(b_k) with b_1 = 0;
+     (M2) offsets and an inverse temperature s, q ∝ p^s·exp(b_k).
+     Penalty Σ b_k² / (2·5²) + (s − 1)² / 2, so that a category absent from a
+     small sample does not send an offset to minus infinity.
+   - *Uncertainty.* 1,000 replicates, seed 20261029. In each, profiles are
+     resampled within wave as in Part 2, a calibration sample of size n is
+     drawn from the resampled profiles, and the outcomes are computed on all
+     resampled profiles. Reported: the median and the 2.5th and 97.5th
+     percentiles over replicates.
+   - *Outcomes,* with the definitions used above, averaged over waves:
+     (a) mean absolute error of item means and mean total variation against
+     weighted CGSS, averaged over items (Part 1);
+     (b) between-profile variance ratio, averaged over items (Part 1);
+     (c) subgroup gradients (item 2 of the morning entry): all four
+     coefficients for the public-role index and A425, and the
+     public-minus-household difference in the education coefficient,
+     against the first audit's CGSS estimates (A425 on urban residence:
+     0.01; education difference: +0.036);
+     (d) in the human-history cells, the slope of A425 on the respondent's
+     A421–A424 mean (addendum to item 1(b)), against weighted CGSS (0.106)
+     and HGB with history (0.087).
+   - *Expectations, stated in advance.* (a) falls as n grows under both
+     methods. Under M1, (c) and (d) change little, because one offset per
+     item moves every profile in the same direction. M2 can shrink all
+     between-profile differences, so it may move (c) and (d) toward CGSS at
+     the cost of (b) and of the public-role gradients. No direction is
+     predicted for M2; what happens to the real public-role gradients is
+     reported alongside.
+   - *Output.* Aggregate tables in `output/v2/exploratory_calibration_*.csv`.
+
+2. *Questionnaire-exposure probe* (`scripts/23_probe_questionnaire_exposure.py`).
+   Whether the model has seen the A42 battery is untested. This probe tests
+   only exposure to the questionnaire text (item wording and order), not to
+   published response distributions, which is the contamination that would
+   matter most for the audit; a null result does not rule out exposure.
+   - *Texts.* A header, then the five items numbered 1–5, one per line,
+     without final punctuation (wording as in `src/survey_llm_eval/factorial.py`).
+     CGSS header: `中国综合社会调查（CGSS）问卷` / `A42. 您是否同意下列说法？`.
+     Neutral header: `某市居民生活状况调查问卷` / `Q12. 您是否同意下列说法？`.
+     Raw text, no chat template, one full forward pass per text, float32
+     output projection.
+   - *(a) Order test, primary.* For each header, the summed log-probability
+     of the battery lines for all 120 orders of the five items. Reported: the
+     rank of the CGSS order (1 = most probable), the one-sided permutation
+     p-value rank/120, and the margin of the CGSS order over the median
+     order. Reading fixed in advance: evidence of exposure to texts listing
+     the battery in CGSS order requires p ≤ 0.05 under the CGSS header and a
+     larger margin under the CGSS header than under the neutral header. A
+     high rank under both headers reflects how plausible the order is, not
+     exposure.
+   - *(b) Free recall, secondary.* For each header and k = 1–4: the first k
+     items in CGSS order, then `k+1. `, greedy decoding of up to 32 tokens,
+     stopping at a newline. Reported: the generated line, whether it equals
+     item k+1, and whether it equals any of the five items. A421 and A423
+     are common sayings, so reproducing them is uninformative; exact
+     reproduction of A422, A424, or A425 counts as evidence of exposure to
+     texts quoting the battery.
+   - *Positive control.* The same order test with the header
+     `社会主义核心价值观：` and the first five values (富强、民主、文明、和谐、自由)
+     separated by `、`, whose order the model should know. If the canonical
+     order does not rank first, the probe is not sensitive enough to read.
+   - *Output.* `output/v2/exploratory_exposure_*.csv`; contains no CGSS
+     data.
