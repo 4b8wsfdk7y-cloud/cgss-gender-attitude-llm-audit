@@ -137,9 +137,13 @@ class OptionScorer:
         text_model = getattr(self.model, "language_model", self.model)
         self.backbone = text_model.model
         if getattr(text_model.args, "tie_word_embeddings", False):
-            self.head = text_model.model.embed_tokens.as_linear
+            head = text_model.model.embed_tokens.as_linear
         else:
-            self.head = text_model.lm_head
+            head = text_model.lm_head
+        # Gemma 2 and 4 soft-cap the final logits (tanh(x / c) * c); Qwen3.5 does not,
+        # so its projection is unchanged.
+        cap = getattr(text_model.args, "final_logit_softcapping", None)
+        self.head = (lambda h: mx.tanh(head(h) / cap) * cap) if cap else head
 
     def render(self, messages: list[dict[str, str]], prefix: str) -> str:
         try:

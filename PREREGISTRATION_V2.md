@@ -442,3 +442,46 @@ was run.** Neither changes a preregistered estimand.
      order does not rank first, the probe is not sensitive enough to read.
    - *Output.* `output/v2/exploratory_exposure_*.csv`; contains no CGSS
      data.
+
+**2026-10-31, a second model, fixed before any of its probabilities were
+computed for the study profiles.** Exploratory; it changes no preregistered
+estimand and adds no hypothesis.
+
+1. *Model.* Gemma 4 12B, instruction-tuned (Google, Apache 2.0), in the MLX
+   4-bit conversion `mlx-community/gemma-4-12B-it-4bit` (Hugging Face revision
+   `73bcf09092aa277861d5a191b989b666f7f32e8f`). Its developer and training data
+   differ from Qwen's, its size is close to Qwen3.5-9B, its chat template has a
+   thinking switch, and the options 1–5 are single tokens. Loading it requires
+   mlx-lm 0.32 or later, which requires Python 3.11, so it runs in a separate
+   environment (Python 3.11.15, mlx-lm 0.32.2, mlx 0.32.4); the Qwen
+   environment is unchanged.
+2. *Output projection.* Gemma 4 applies a final-logit soft cap, c·tanh(x/c)
+   with c = 30, which the float32 final-position projection of the 2026-10-14
+   entry left out. The projection in `scripts/07_run_logprob_audit.py` and
+   `scripts/23_probe_questionnaire_exposure.py` now applies the cap when the
+   model configuration defines one. Qwen3.5 defines none; its projection is the
+   same function as before and gave identical probabilities on test prompts.
+   Checks on invented personas, not CGSS profiles: on 30 prompts, probabilities
+   without the cap differed from the model's own forward pass by up to 0.296,
+   and with the cap by up to 0.046, the bfloat16 precision issue of the
+   2026-10-14 entry. The smallest probability mass on the five options was
+   0.9996. With thinking disabled, the chat template closes an empty thought
+   channel before the answer.
+3. *Run.* The eight factorial cells with modal answer histories, all 300
+   profiles, thinking disabled: `scripts/07_run_logprob_audit.py --history
+   greedy`, seed 20261013, one full forward pass per prompt, as in the primary
+   Qwen run. Outputs go to a separate directory outside the repository.
+4. *Analysis.* The Part 1 metrics, and the Part 2 primary outcome and
+   factorial effects with the Part 2 bootstrap, computed for Gemma with the
+   definitions used for Qwen and reported beside the Qwen values. No direction
+   is predicted. With one model per developer, differences between the two
+   models are described and not attributed to the developer or to training
+   data. Further analyses for Gemma (Part 3, the robustness check, the
+   exploratory analyses) are specified in a later entry before they are run.
+5. *Thinking-context cells.* V1-T1 is not yet defined for Gemma. Qwen3.5's
+   template with thinking enabled ends in an open `<think>` block, so V1-T1
+   scores the answer inside the thinking segment, as in v1. Gemma 4's template
+   with thinking enabled adds `<|think|>` to the system turn and ends at the
+   start of the model turn without opening a thought channel. The Gemma
+   versions of V1-T1 and V1-T0 will be fixed in a later entry before those
+   cells are run.
