@@ -511,3 +511,29 @@ estimand and adds no hypothesis.
    is Gemma's own cell. The comparison of V1-T1 item means with the v1
    sampled means is not made, because v1 ran only with Qwen. No direction is
    predicted.
+
+**2026-10-31, human-history cells and subgroup gradients for Gemma, fixed
+before either was run** (item 4 of the first 2026-10-31 entry). Exploratory;
+no preregistered estimand changes. Before this entry, interim Part 1–2 results
+for Gemma were inspected on the 276 profiles then complete; no human-history
+or subgroup result had been computed for Gemma.
+
+1. *Human-history cells.* H-A1-B1-C1 and H-A0-B1-C0 as in item 1 of the first
+   2026-10-29 entry, with Gemma 4 12B, thinking disabled, one full forward
+   pass per prompt (`scripts/15_run_human_history.py`, unchanged). The same
+   296 profiles; A421 is taken from Gemma's primary run. The run starts after
+   the thinking-context cells have finished and, following the Qwen run order
+   (second 2026-10-29 entry), scores H-A1-B1-C1 for all 296 profiles before
+   H-A0-B1-C0. Analysis: items 1(a) and 1(b), with the slope of the addendum,
+   in `scripts/18_analyze_history_comparisons.py` with Gemma's ledgers. The
+   survey-trained comparators of item 3 do not depend on the model and are
+   reused unchanged. Neither cell is analysed before both are complete.
+2. *Subgroup gradients.* Item 2 of the first 2026-10-29 entry for Gemma's eight
+   factorial cells and its V1-T1 and V1-T0 cells, with the same benchmark
+   (`scripts/17_subgroup_gradients.py`, unchanged).
+3. *Reporting.* Aggregate tables for Gemma are written to a separate directory
+   and do not replace the Qwen tables in `output/v2`. Values are reported
+   beside Qwen's. No direction is predicted, and differences between the two
+   models are described, not attributed to the developer or to training data.
+4. *Not run for Gemma:* Part 3, the sampled-history robustness check of the
+   2026-10-28 entry, and the two analyses of the 2026-10-29 (evening) entry.
