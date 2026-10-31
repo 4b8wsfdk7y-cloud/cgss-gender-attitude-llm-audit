@@ -1,5 +1,5 @@
 # requires: dplyr, readr, tidyr, ggplot2, scales, ragg
-# README figure for the sampled-history robustness check.
+# Results-page figure (docs/assets/) for the sampled-history robustness check.
 # Reads only the aggregate tables written by scripts/14_analyze_sampled_history.py;
 # no restricted data are needed. Theme and palette follow scripts/10_plot_v2.R.
 #

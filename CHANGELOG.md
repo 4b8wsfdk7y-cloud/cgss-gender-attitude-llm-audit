@@ -32,9 +32,27 @@
   the items (`output/v2/exploratory_exposure_*.csv`). One generated line is
   offensive and is replaced in the public recall table by a placeholder with
   its SHA-256; a rerun reproduces the line locally.
-- README and README.zh-CN report both analyses, with a figure drawn by
-  `scripts/24_plot_calibration.R` (`output/figures/v2_recalibration.png`).
-  The paper and the results page do not yet include them.
+- README and README.zh-CN report both analyses. The paper and the results
+  page do not yet include them.
+
+### Changed (2026-10-30)
+
+- README and README.zh-CN are shorter: the v1 summary and results sections
+  are merged, and the v2 section is condensed into main results, the thinking
+  context, measurement and subgroup structure, and the follow-up analyses.
+  Values are unchanged; the full tables remain in `output/v2/`.
+- The README figures are four composites drawn by
+  `scripts/24_plot_readme_figures.R` (renamed from `24_plot_calibration.R`)
+  with one palette: `readme_v1_overview.png`, `readme_v2_factorial.png`,
+  `readme_v2_structure.png`, and `readme_v2_followups.png`. They replace eleven
+  figures in the README. `v2_recalibration.png` was removed; the figures from
+  scripts 10, 20, and 21 remain for the results page.
+- The v1 overview figure is drawn from `output/metrics_distribution.csv` and
+  `output/metrics_qwen_sampling_envelope.csv`. The repository has no script
+  for the earlier `marginal_fidelity.png` and `benchmark_comparison.png`; both
+  files are kept, and the results page uses its own copy of the first.
+- The quick start in README.zh-CN now uses the commands that CI runs; it had
+  named a `dev` extra and `pytest`, neither of which the package provides.
 
 ### Fixed
 

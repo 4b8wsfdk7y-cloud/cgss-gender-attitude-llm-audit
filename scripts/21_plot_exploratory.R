@@ -1,5 +1,5 @@
 # requires: dplyr, readr, tidyr, ggplot2, scales, ragg
-# README figures for the v2 measurement models and the exploratory analyses.
+# Results-page figures (docs/assets/) for the v2 measurement models and the exploratory analyses.
 # Reads only the aggregate tables written by scripts/12_measurement_models.R,
 # scripts/17_subgroup_gradients.py, scripts/18_analyze_history_comparisons.py,
 # and scripts/19_item_means_egalitarian.py; no restricted data are needed.

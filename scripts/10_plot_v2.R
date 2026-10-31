@@ -1,5 +1,5 @@
 # requires: dplyr, readr, ggplot2, scales, ragg
-# README figures for the v2 option-probability audit.
+# Results-page figures (docs/assets/) for the v2 option-probability audit.
 # Reads only the aggregate tables written by scripts/09_analyze_logprob_audit.py
 # and scripts/08_export_human_benchmark.R; no restricted data are needed.
 # Theme and palette follow paper/reproduce.R.
