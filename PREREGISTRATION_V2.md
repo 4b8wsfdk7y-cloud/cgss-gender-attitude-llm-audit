@@ -485,3 +485,29 @@ estimand and adds no hypothesis.
    start of the model turn without opening a thought channel. The Gemma
    versions of V1-T1 and V1-T0 will be fixed in a later entry before those
    cells are run.
+
+**2026-10-31, thinking-context cells for Gemma, fixed before they were run**
+(item 5 of the previous entry).
+
+1. *Cells.* V1-T1 and V1-T0 as specified in item 3 of the 2026-10-27 entry,
+   with Gemma 4 12B. V1-T0 renders the chat template with thinking disabled,
+   which closes an empty thought channel before the answer. V1-T1 renders it
+   with thinking enabled and then appends `<|channel>thought\n`, the text with
+   which the model opens its thought channel when thinking is enabled (its
+   first three generated tokens in a check on an invented persona). The
+   integer JSON is thus scored inside the thinking segment, as for Qwen3.5.
+   Scoring the answer at the start of the model turn with thinking enabled but
+   no thought channel open is not run.
+2. *Implementation.* `scripts/11_run_v1_context_cells.py` appends the opening
+   only when the thinking-enabled template ends at the start of a Gemma 4
+   model turn. For Qwen3.5 the prompts are unchanged: the hashes of 40 Qwen
+   V1-T1 and V1-T0 prompts equal those in the Qwen records. A smoke test on
+   three profiles (one per wave) checked the code path and the v1 user-prompt
+   hashes; its outputs are not analysed.
+3. *Run and analysis.* All 300 profiles, after the factorial run has
+   finished, with outputs in a separate directory outside the repository. The
+   three contrasts of the 2026-10-27 entry, with the Part 1 metrics, the
+   Part 2 primary outcome, and the profile-cluster bootstrap, where A1-B1-C1
+   is Gemma's own cell. The comparison of V1-T1 item means with the v1
+   sampled means is not made, because v1 ran only with Qwen. No direction is
+   predicted.

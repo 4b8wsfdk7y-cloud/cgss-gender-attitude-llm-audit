@@ -13,6 +13,11 @@ PREREGISTRATION_V2.md:
 V1-T1  chat template rendered with thinking enabled (the v1 context)
 V1-T0  the same prompt with thinking disabled (the v2 context)
 
+Gemma 4's template with thinking enabled ends at the start of the model turn,
+without an open thinking segment. For Gemma, V1-T1 appends the opening of the
+thought channel that the model itself writes, so the answer is again scored
+inside the thinking segment (2026-10-31 entry of PREREGISTRATION_V2.md).
+
 The assistant text is the integer JSON that the v1 response schema enforced,
 for example ``{"A421": 4, "A422": ``. Earlier answers are the modal options
 (greedy history). Every prompt is scored with one full forward pass, as in the
@@ -66,6 +71,18 @@ def v1_messages(persona: str) -> tuple[list[dict[str, str]], str]:
         {"role": "user", "content": "/no_think\n" + prompt},
     ]
     return messages, hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+
+
+GEMMA4_THOUGHT_OPEN = "<|channel>thought\n"
+
+
+def open_thinking(base: str) -> str:
+    """End a thinking-enabled prompt inside an open thinking segment."""
+    if base.endswith("<think>\n"):  # Qwen3.5 opens the segment in its template
+        return base
+    if base.endswith("<|turn>model\n"):  # Gemma 4 leaves it to the model
+        return base + GEMMA4_THOUGHT_OPEN
+    raise SystemExit("Unknown chat template: cannot open a thinking segment")
 
 
 def json_prefix(items: list[str], history: list[int], target: int) -> str:
@@ -137,7 +154,9 @@ def main() -> int:
                 base = scorer.tokenizer.apply_chat_template(
                     messages, add_generation_prompt=True, tokenize=False,
                     enable_thinking=CELLS[cell])
-                known = history_from_ledger.get((profile["profile_id"], cell), {})
+                if CELLS[cell]:
+                    base = open_thinking(base)
+                known =history_from_ledger.get((profile["profile_id"], cell), {})
                 history: list[int] = []
                 for target, item in enumerate(items):
                     if (profile["profile_id"], cell, item) in done:
