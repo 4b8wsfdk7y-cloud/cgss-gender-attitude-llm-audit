@@ -1,0 +1,95 @@
+{
+  "model": "mlx-community/gemma-4-12B-it-4bit",
+  "hf_revision": "73bcf09092aa277861d5a191b989b666f7f32e8f",
+  "environment": {
+    "python": "3.11.15",
+    "mlx": "0.32.4",
+    "mlx_lm": "0.32.2",
+    "hardware": "Apple M4, 24 GB"
+  },
+  "records": {
+    "factorial": 12000,
+    "v1_context": 3000,
+    "human_history": 2368
+  },
+  "preregistration": "PREREGISTRATION_V2.md, the three 2026-10-31 entries",
+  "runs": {
+    "factorial": {
+      "created_utc": "2026-10-31T05:34:36.410939+00:00",
+      "model_index_sha256": "9ac99e7a6cf3e4d40eb8df01644fe9c04036ace94f3389df35db9d9449758516",
+      "model_config_sha256": "fbc1c1cb48ed86ec98482b2d41f5a03d3991aba74b7c29a93d430761e6518a38",
+      "chat_template_sha256": "36e3a42e5cf14cd0020e72d92e1fdd9970f59b82170e421f0cbe1bb42bead3f0",
+      "mlx_version": "0.32.4",
+      "mlx_lm_version": "0.32.2",
+      "code_commit": "8decb12583f17a9b84617ec77bf5a0dd6a9fd013",
+      "cells": [
+        "A0-B0-C0",
+        "A0-B0-C1",
+        "A0-B1-C0",
+        "A0-B1-C1",
+        "A1-B0-C0",
+        "A1-B0-C1",
+        "A1-B1-C0",
+        "A1-B1-C1"
+      ],
+      "history_mode": "greedy",
+      "paths": 1,
+      "seed": 20261013,
+      "profiles": 300,
+      "option_token_ids": {
+        "1": 236770,
+        "2": 236778,
+        "3": 236800,
+        "4": 236812,
+        "5": 236810
+      },
+      "scoring": "single full forward pass per prompt; output projection for the final position in float32; identical prompts within a profile are scored once"
+    },
+    "v1_context": {
+      "created_utc": "2026-10-31T17:55:05.814878+00:00",
+      "model_index_sha256": "9ac99e7a6cf3e4d40eb8df01644fe9c04036ace94f3389df35db9d9449758516",
+      "chat_template_sha256": "36e3a42e5cf14cd0020e72d92e1fdd9970f59b82170e421f0cbe1bb42bead3f0",
+      "mlx_version": "0.32.4",
+      "mlx_lm_version": "0.32.2",
+      "code_commit": "984e3042dae4e018ecf455eb18ae07bcb6808dd0",
+      "cells": [
+        "V1-T1",
+        "V1-T0"
+      ],
+      "history_mode": "greedy",
+      "profiles": 300,
+      "option_token_ids": {
+        "1": 236770,
+        "2": 236778,
+        "3": 236800,
+        "4": 236812,
+        "5": 236810
+      },
+      "scoring": "full forward pass, float32 final-position projection"
+    },
+    "human_history": {
+      "created_utc": "2026-10-31T23:13:42.777712+00:00",
+      "model_index_sha256": "9ac99e7a6cf3e4d40eb8df01644fe9c04036ace94f3389df35db9d9449758516",
+      "chat_template_sha256": "36e3a42e5cf14cd0020e72d92e1fdd9970f59b82170e421f0cbe1bb42bead3f0",
+      "mlx_version": "0.32.4",
+      "mlx_lm_version": "0.32.2",
+      "code_commit": "984e3042dae4e018ecf455eb18ae07bcb6808dd0",
+      "cells": {
+        "H-A1-B1-C1": "A1-B1-C1",
+        "H-A0-B1-C0": "A0-B1-C0"
+      },
+      "history_mode": "human",
+      "profiles": 296,
+      "profiles_skipped_missing_answers": 4,
+      "option_token_ids": {
+        "1": 236770,
+        "2": 236778,
+        "3": 236800,
+        "4": 236812,
+        "5": 236810
+      },
+      "scoring": "full forward pass, float32 final-position projection; A421 not scored",
+      "note": "H-A1-B1-C1 and H-A0-B1-C0 were scored in two invocations with the same code commit; created_utc is that of the second"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+contrast,metric,item,estimate,ci95_low,ci95_high,interval_excludes_zero
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a422,-0.11879607558024041,-0.41057868179724416,0.1972152129211395,False
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a423,-1.3054152845779101,-1.6142434216393644,-1.0049622597647663,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a424,-0.8062683228375329,-1.0847490442860495,-0.5476377655328133,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a425,-2.327423505187266,-2.6904185838101116,-1.9724249921785846,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),log_score,a422_a425,-1.139475797045737,-1.3132741307987912,-0.9611247502187288,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a422,-0.01614217299982673,-0.0402828566160309,0.008054478382080269,False
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a423,-0.04917321391227228,-0.06770261465436665,-0.03177924140208553,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a424,-0.019801970614994197,-0.036105812035449825,-0.004421538706725947,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a425,-0.041638259026987035,-0.055343983611572674,-0.02720985692478277,True
+H-A1-B1-C1 (respondent history) minus A1-B1-C1 (model's modal history),rps,a422_a425,-0.0316889041385201,-0.04108118316198769,-0.022274926846729645,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a422,-0.9465849768989312,-1.3204568361637807,-0.5708103598552825,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a423,-1.5575675294390785,-1.8638193657095206,-1.2507394056595174,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a424,-1.5359865210030352,-1.826759239213852,-1.250351764587236,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a425,0.6281755397341708,0.20991727591709103,1.0425509760571376,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),log_score,a422_a425,-0.852990871901719,-1.065585973556701,-0.6480481516476698,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a422,-0.07257755535013277,-0.10155256302588246,-0.043935764432281574,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a423,-0.06186758147561719,-0.08093395910495477,-0.04244368336977646,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a424,-0.08231667906878254,-0.10181392381555746,-0.06188446878968612,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a425,-0.027375004064826736,-0.04254679080021413,-0.011938591265797256,True
+H-A1-B1-C1 (respondent history) minus A1-B0-C1 (no history),rps,a422_a425,-0.0610342049898398,-0.07158440543189436,-0.05017636142589575,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),log_score,a422,-0.45365828367073746,-0.75409621792401,-0.15014943652935722,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),log_score,a423,-0.5274058797291481,-0.7185331429138628,-0.3297428148546173,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),log_score,a424,-0.5351713098565973,-0.832237108791136,-0.2533799234405793,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),log_score,a425,-0.7512308725592307,-0.9627779095982604,-0.537240062631256,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),log_score,a422_a425,-0.5668665864539282,-0.7029245160718222,-0.4321240381835592,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),rps,a422,-0.025484532318822917,-0.04501617358585317,-0.005062591412367574,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),rps,a423,-0.01507438957506635,-0.027852821036893457,-0.0011593047996998893,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),rps,a424,0.002840272203631977,-0.012599724960889696,0.019070208109520054,False
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),rps,a425,-0.03819989987003802,-0.05548230642484233,-0.02093249996311328,True
+H-A0-B1-C0 (respondent history) minus A0-B1-C0 (model's modal history),rps,a422_a425,-0.0189796373900738,-0.026734881516044365,-0.01080529486975249,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),log_score,a422,-0.9587845762027802,-1.316524775242332,-0.597485472141034,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),log_score,a423,-1.356210508631313,-1.7460485884993844,-0.9392647135617188,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),log_score,a424,-1.4728664678871528,-1.8721183115962614,-1.0950074925945668,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),log_score,a425,-1.5465370780326877,-1.8385598784578983,-1.2601545793643851,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),log_score,a422_a425,-1.3335996576884837,-1.5128749326674906,-1.162450055853117,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),rps,a422,-0.04724137146787194,-0.06786503001626398,-0.025326314351411642,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),rps,a423,-0.021467529909582506,-0.0427812850462939,0.0022735896850748067,False
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),rps,a424,-0.03854794354813515,-0.05555028702379915,-0.022162045824729453,True
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),rps,a425,-0.0028743205875023103,-0.020742955061312525,0.013996074148522589,False
+H-A0-B1-C0 (respondent history) minus A0-B0-C0 (no history),rps,a422_a425,-0.02753279137827297,-0.037282540849438335,-0.01764388942112013,True
+HGB with respondent history minus HGB without history,log_score,a422,-0.2106122609548462,-0.28983498592323576,-0.1325876748532476,True
+HGB with respondent history minus HGB without history,log_score,a423,-0.15235382825494548,-0.22071772448203128,-0.08584700852868594,True
+HGB with respondent history minus HGB without history,log_score,a424,-0.1914209008720238,-0.2600505388651719,-0.12190356272822023,True
+HGB with respondent history minus HGB without history,log_score,a425,-0.09545389257817116,-0.15408771678458186,-0.03591602722401347,True
+HGB with respondent history minus HGB without history,log_score,a422_a425,-0.16246022066499655,-0.2050825835727949,-0.11793516449767255,True
+HGB with respondent history minus HGB without history,rps,a422,-0.028964936633590732,-0.040463389807694095,-0.017987960573338305,True
+HGB with respondent history minus HGB without history,rps,a423,-0.024400817725019425,-0.033512893277194124,-0.013869311565399969,True
+HGB with respondent history minus HGB without history,rps,a424,-0.0194653635782783,-0.027595467768024635,-0.010992484726341628,True
+HGB with respondent history minus HGB without history,rps,a425,-0.007844242389878589,-0.013900264595149057,-0.0016537565331706339,True
+HGB with respondent history minus HGB without history,rps,a422_a425,-0.020168840081691786,-0.02569980981911004,-0.014228313419412959,True

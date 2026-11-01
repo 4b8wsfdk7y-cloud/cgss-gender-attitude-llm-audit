@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Added (2026-10-31, second model, pre-specified in `PREREGISTRATION_V2.md` before each part was run)
+
+- Gemma 4 12B (`mlx-community/gemma-4-12B-it-4bit`) as a second model: the
+  eight factorial cells, V1-T1 and V1-T0, the two human-history cells, and the
+  subgroup gradients, with the same profiles and scripts. Aggregate tables in
+  `output/v2/gemma4/`, run details in `output/v2/gemma4/gemma4_run_metadata.json`.
+- README and README.zh-CN report the Gemma results beside Qwen's. The paper
+  and the results page do not yet include them.
+
+### Changed (2026-10-31)
+
+- `scripts/07_run_logprob_audit.py` and `scripts/23_probe_questionnaire_exposure.py`
+  apply the final-logit soft cap when the model configuration defines one
+  (Gemma 2 and 4); Qwen3.5 defines none, and its probabilities are unchanged.
+- `scripts/11_run_v1_context_cells.py` opens Gemma 4's thought channel in
+  V1-T1, so the answer is scored inside the thinking segment as for Qwen3.5;
+  Qwen3.5 prompts are unchanged.
+
 ### Added
 
 - Results for the second human-history cell, H-A0-B1-C0, analysed once all

@@ -1,0 +1,21 @@
+{
+  "ledger_records": 12000,
+  "profiles": 300,
+  "cells": [
+    "A0-B0-C0",
+    "A0-B0-C1",
+    "A0-B1-C0",
+    "A0-B1-C1",
+    "A1-B0-C0",
+    "A1-B0-C1",
+    "A1-B1-C0",
+    "A1-B1-C1",
+    "V1-T1",
+    "V1-T0"
+  ],
+  "specification": "OLS within wave on female, educ_years, age_decade (centred within wave), urban_residence; egalitarian-coded expected scores; unweighted profiles",
+  "human_benchmark": "first audit, weighted full CGSS (output/metrics_subgroup_gradients.csv)",
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled within wave; CGSS coefficients drawn from normal(estimate, se)"
+}

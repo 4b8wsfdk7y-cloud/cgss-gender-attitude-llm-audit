@@ -370,6 +370,65 @@ that the model has seen texts listing the battery in CGSS order. Whether
 published CGSS response distributions entered its training data cannot be
 tested this way.
 
+**Second model: Gemma 4 12B (exploratory, 31 October 2026)**
+
+The factorial run, the thinking-context cells, the human-history cells, and
+the subgroup gradients were repeated with the instruction-tuned Gemma 4 12B
+(`mlx-community/gemma-4-12B-it-4bit`, revision `73bcf09`), with the same
+profiles and scripts and thinking disabled. Each part was specified in a
+31 October entry of the preregistration before it was run; interim Part 1–2
+results on 276 of the 300 profiles were inspected before the entry for the
+last two parts. Gemma soft-caps its final logits (30·tanh(x/30)); the scorer
+now applies the cap when a model defines one, which leaves Qwen's
+probabilities unchanged. Gemma needs mlx-lm 0.32 and Python 3.11 and runs in a
+separate environment. The aggregate tables are in
+[`output/v2/gemma4/`](output/v2/gemma4/), with the file names of the Qwen
+tables.
+
+| Ranges over the eight factorial cells unless stated | Gemma 4 12B | Qwen3.5-9B |
+|---|---:|---:|
+| A425 mean absolute correlation, cells without history (HGB: 0.45) | 0.40–0.60 | 0.39–0.58 |
+| A425 mean absolute correlation, cells with history | 0.65–0.83 | 0.78–0.92 |
+| B: answer history [95% CI] | +0.260 [0.231, 0.284] | +0.379 [0.339, 0.410] |
+| A × C | +0.085 [0.046, 0.122] | +0.237 [0.192, 0.286] |
+| B × C | −0.198 [−0.233, −0.163] | −0.035 [−0.091, 0.019] |
+| Mean absolute error of item means, A1-B1-C1 | 0.61 | 0.95 |
+| Within-profile share of predictive variance | 0.19–0.28 | 0.50–0.93 |
+| Matched log score (uniform guess: 1.61) | 4.73–6.13 | 1.97–3.06 |
+| A425 slope on the respondent's A421–A424 mean, H-A1-B1-C1 / H-A0-B1-C0 (CGSS: 0.11) | 0.50 / 0.55 | 0.65 / 0.55 |
+| V1-T1 minus V1-T0 [95% CI] | +0.10 [0.07, 0.14] | −0.47 [−0.54, −0.41] |
+
+- *What replicates.* Every cell with history is more coherent than every cell
+  without, the cells without history are on either side of the HGB baseline,
+  and answer history is the largest effect. Given
+  the respondent's own answers, Gemma's A425 slopes, 0.50 [0.42, 0.58] and
+  0.55 [0.47, 0.63], are 0.41 and 0.46 above HGB with the same history
+  (intervals 0.32 to 0.50 and 0.37 to 0.55). Gemma also carries the urban
+  gradient over to housework (A425 coefficient 0.29–0.66 in seven cells,
+  against 0.01 in CGSS), and in seven cells its education gradient is larger
+  on A425 than on the public-role items (public-minus-housework difference
+  −0.029 to +0.090, against +0.036 in CGSS; every interval for the difference
+  excludes zero).
+- *What differs.* Gemma's distributions are more concentrated within
+  profiles, so its matched log score is worse than Qwen's in all eight cells,
+  although its item-mean error is smaller in six. It understates the gender
+  gap on A425 in every cell (0.04–0.25, against 0.30), puts a larger gender
+  gap on the public-role items than on housework in six cells, the reverse of
+  CGSS (Qwen: one cell; Gemma's difference from CGSS excludes zero in seven
+  cells), and adds an age gradient on A425 in every cell (−0.29
+  to −0.18 per decade, against 0.00). B × C is negative only for Gemma.
+  Opening the thinking segment raises Gemma's coherence, so the lower
+  coherence of v1 is specific to Qwen's thinking context; Gemma's V1-T1
+  appends the opening of its thought channel and corresponds to no v1 run.
+- *Prediction with the respondent's own answers.* On A422–A425 together,
+  Gemma's log score and ranked probability score improve on both its own
+  history and no history in both human-history cells. For A425 against no
+  history, the two scores disagree in H-A1-B1-C1 (log score +0.63, ranked
+  probability score −0.027), and the ranked probability score does not change
+  in H-A0-B1-C0.
+- With one model per developer, the differences between the two models are
+  described and not attributed to the developer or to training data.
+
 **What v2 does not show**
 
 - v2 is not a replication or validation of v1. Beyond the thinking context,
@@ -378,8 +437,8 @@ tested this way.
   answer history.
 - The exploratory analyses were specified after the preregistered results were
   known and should be read as such.
-- The results describe one 4-bit local model and do not generalize to other
-  models or quantizations.
+- The results describe two 4-bit local models of 9 and 12 billion parameters
+  and do not generalize to other models or quantizations.
 
 **Code**
 
@@ -391,6 +450,7 @@ tested this way.
 | v1-prompt cells | [`11_run_v1_context_cells.py`](scripts/11_run_v1_context_cells.py), [`13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py) |
 | Measurement models | [`12_measurement_models.R`](scripts/12_measurement_models.R) |
 | Exploratory analyses | scripts 15–19, [`22_calibrate_with_human_sample.py`](scripts/22_calibrate_with_human_sample.py), [`23_probe_questionnaire_exposure.py`](scripts/23_probe_questionnaire_exposure.py) |
+| Second model | scripts 07, 11, and 15 with `--model` pointing to Gemma; scripts 09, 13, 17, and 18 on Gemma's ledgers, writing to `output/v2/gemma4/` |
 | Figures | [`24_plot_readme_figures.R`](scripts/24_plot_readme_figures.R) for this README; scripts 10, 20, and 21 for the results page in `docs/` |
 
 Probability extraction and the factorial prompts live in
@@ -496,6 +556,9 @@ survey-llm-eval/
   weights `lmstudio-community/Qwen3.5-9B-MLX-4bit`; Part 3 models with lavaan
   0.7-3, semTools 0.5.10, and mirt 1.48; the exploratory HGB with history with
   scikit-learn 1.7.2 and scipy 1.14.1 (see `ml/README.md`)
+- second model: Python 3.11.15, MLX 0.32.4, and mlx-lm 0.32.2, weights
+  `mlx-community/gemma-4-12B-it-4bit` (revision `73bcf09`); run details in
+  `output/v2/gemma4/gemma4_run_metadata.json`
 
 ## Main outputs
 

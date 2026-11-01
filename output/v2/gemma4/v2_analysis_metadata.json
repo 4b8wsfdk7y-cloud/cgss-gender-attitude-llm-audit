@@ -1,0 +1,15 @@
+{
+  "ledger_sha256": "08df70510eff583a47733c2676f4482abb8484cd72fce888dbb2fd1a3a4b09da",
+  "records": 12000,
+  "profiles": 300,
+  "profiles_per_wave": {
+    "2012": 100,
+    "2018": 100,
+    "2021": 100
+  },
+  "reference_cell": "A1-B1-C1",
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled with replacement within wave; all cells and items move together",
+  "interaction_definition": "differences of simple effects, not halved"
+}

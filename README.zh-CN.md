@@ -175,11 +175,33 @@ flowchart LR
 
 *问卷曝光探针*（[`exploratory_exposure_order_test.csv`](output/v2/exploratory_exposure_order_test.csv)、[`exploratory_exposure_recall.csv`](output/v2/exploratory_exposure_recall.csv)）。探针把五道题按每行一题排成全部 120 种顺序，分别放在 CGSS 标题和中性标题下计算概率（原始文本，每种顺序一次前向计算）。CGSS 顺序在 CGSS 标题下排第 85（置换 p = 0.71），在中性标题下排第 23（p = 0.19）；正面对照用社会主义核心价值观的前五个词，排第一（p = 0.008）。给出按 CGSS 顺序排列的前 k 道题后，模型没有写出五道题中的任何一道；其中一条生成内容具有冒犯性，在公开表格中打了码，保留了它的 SHA-256。没有证据表明模型见过按 CGSS 顺序列出这组题的文本。CGSS 已发表的回答分布是否进入了训练数据，用这种方法无法检验。
 
+**第二个模型：Gemma 4 12B（探索性，2026 年 10 月 31 日）**
+
+析因实验、思考模式条件、真人历史条件和子群体差异用指令微调版 Gemma 4 12B（`mlx-community/gemma-4-12B-it-4bit`，revision `73bcf09`）重做了一遍，画像和脚本相同，关闭思考模式。每一部分都在运行前写入预注册 10 月 31 日的条目；写最后两部分的条目之前，查看过 300 个画像中 276 个的第 1–2 部分中期结果。Gemma 对最终 logit 做软截断（30·tanh(x/30)），打分程序现在会在模型定义了截断时使用它，Qwen 的概率不受影响。Gemma 需要 mlx-lm 0.32 和 Python 3.11，在单独的环境中运行。聚合表在 [`output/v2/gemma4/`](output/v2/gemma4/)，文件名与 Qwen 的表相同。
+
+| 未注明时为 8 个析因条件的范围 | Gemma 4 12B | Qwen3.5-9B |
+|---|---:|---:|
+| A425 平均绝对相关，无作答历史的条件（HGB：0.45） | 0.40–0.60 | 0.39–0.58 |
+| A425 平均绝对相关，有作答历史的条件 | 0.65–0.83 | 0.78–0.92 |
+| B：作答历史 [95% CI] | +0.260 [0.231, 0.284] | +0.379 [0.339, 0.410] |
+| A × C | +0.085 [0.046, 0.122] | +0.237 [0.192, 0.286] |
+| B × C | −0.198 [−0.233, −0.163] | −0.035 [−0.091, 0.019] |
+| 题目均值的平均绝对误差，A1-B1-C1 | 0.61 | 0.95 |
+| 预测方差中画像内的占比 | 0.19–0.28 | 0.50–0.93 |
+| 匹配 log score（均匀猜测为 1.61） | 4.73–6.13 | 1.97–3.06 |
+| A425 对受访者 A421–A424 均值的斜率，H-A1-B1-C1 / H-A0-B1-C0（CGSS：0.11） | 0.50 / 0.55 | 0.65 / 0.55 |
+| V1-T1 减 V1-T0 [95% CI] | +0.10 [0.07, 0.14] | −0.47 [−0.54, −0.41] |
+
+- *复现的部分。* 每个有作答历史的条件都比每个无作答历史的条件一致性高，无作答历史的条件分布在 HGB 基准两侧，作答历史是最大的效应。给出受访者自己的回答时，Gemma 的 A425 斜率为 0.50 [0.42, 0.58] 和 0.55 [0.47, 0.63]，比带同样历史的 HGB 高 0.41 和 0.46（区间 0.32 到 0.50、0.37 到 0.55）。Gemma 同样把城乡梯度扩展到家务题（7 个条件中 A425 的系数为 0.29–0.66，CGSS 为 0.01）；有 7 个条件的教育梯度在 A425 上大于公共角色题（“公共角色减家务”的差为 −0.029 到 +0.090，CGSS 为 +0.036，差值的区间都不含 0）。
+- *不同的部分。* Gemma 在画像内的分布更集中，所以 8 个条件的匹配 log score 都比 Qwen 差，尽管有 6 个条件的题目均值误差更小。它在每个条件中都低估 A425 上的性别差距（0.04–0.25，CGSS 为 0.30）；有 6 个条件在公共角色题上的性别差距大于家务题，方向与 CGSS 相反（Qwen 只有 1 个条件；Gemma 与 CGSS 之差有 7 个条件的区间不含 0）；每个条件都给 A425 加上了年龄梯度（每 10 岁 −0.29 到 −0.18，CGSS 为 0.00）。B × C 只在 Gemma 上为负。打开思考段使 Gemma 的一致性上升，所以第一版一致性较低是 Qwen 思考模式特有的现象；Gemma 的 V1-T1 在提示后追加了思考段的开头，没有对应的第一版运行。
+- *给出受访者自己的回答时的预测。* A422–A425 合计，Gemma 在两个真人历史条件中的 log score 和排序概率得分都比用自己的历史、比没有历史好。单看 A425、与无历史相比，H-A1-B1-C1 中两个得分方向不一（log score +0.63，排序概率得分 −0.027），H-A0-B1-C0 中排序概率得分没有变化。
+- 每个开发方只有一个模型，两个模型的差异只作描述，不归因于开发方或训练数据。
+
 **第二版不能说明的问题**
 
 - 第二版不是对第一版的复现或验证。除思考模式外，两版在系统提示词、用户提示词、解码设置（第一版在 T = 0.7、top-p = 0.9 下抽样，第二版读取 T = 1 的概率）和作答历史上都有差别。
 - 探索性分析是在预注册结果已知之后设定的，应按探索性结果理解。
-- 结果只描述一个 4-bit 本地模型，不能推广到其他模型或量化方式。
+- 结果只描述两个 4-bit 本地模型（90 亿和 120 亿参数），不能推广到其他模型或量化方式。
 
 **代码**
 
@@ -191,6 +213,7 @@ flowchart LR
 | 第一版提示词条件 | [`11_run_v1_context_cells.py`](scripts/11_run_v1_context_cells.py)、[`13_analyze_v1_context.py`](scripts/13_analyze_v1_context.py) |
 | 测量模型 | [`12_measurement_models.R`](scripts/12_measurement_models.R) |
 | 探索性分析 | 脚本 15–19、[`22_calibrate_with_human_sample.py`](scripts/22_calibrate_with_human_sample.py)、[`23_probe_questionnaire_exposure.py`](scripts/23_probe_questionnaire_exposure.py) |
+| 第二个模型 | 脚本 07、11、15 用 `--model` 指向 Gemma；脚本 09、13、17、18 读取 Gemma 的记录文件，输出到 `output/v2/gemma4/`；运行环境见 `output/v2/gemma4/gemma4_run_metadata.json` |
 | 图 | [`24_plot_readme_figures.R`](scripts/24_plot_readme_figures.R) 画两份 README 的图；脚本 10、20、21 画 `docs/` 中结果页的图 |
 
 选项概率的提取和析因提示词在 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py) 和 [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py) 中，测试在 `tests/test_probabilities.py` 和 `tests/test_factorial.py`。画图脚本只读 `output/` 中的聚合表，脚本 23 只需要本地模型；其余脚本需要获授权的 CGSS 衍生文件。
