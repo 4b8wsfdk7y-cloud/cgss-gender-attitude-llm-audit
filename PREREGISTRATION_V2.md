@@ -537,3 +537,41 @@ or subgroup result had been computed for Gemma.
    models are described, not attributed to the developer or to training data.
 4. *Not run for Gemma:* Part 3, the sampled-history robustness check of the
    2026-10-28 entry, and the two analyses of the 2026-10-29 (evening) entry.
+
+**2026-11-15, downstream statistics, recorded after they were computed.**
+Exploratory; no preregistered estimand changes. The plan below was written in
+a separate note before any of these quantities was computed and is copied here
+in substance; it was not committed before the run, so the results are
+exploratory and are reported as such.
+
+1. *Question.* If a researcher treated the synthetic respondents as survey data
+   and ran the analyses common in public-management survey research, which
+   conclusions would differ from those reached with CGSS?
+2. *Populations.* H-full: CGSS 2012, 2018, 2021 with complete A421–A425, a
+   positive weight, and the control variables, waves counting equally. H-300:
+   1,000 samples of 100 respondents per wave drawn with probability
+   proportional to the weight (seed 20261115), the sampling range at the
+   synthetic sample size. H-matched: the 296 matched respondents with complete
+   answers. S-drawn: Qwen3.5-9B, each factorial cell, the drawn answers of the
+   2026-10-28 entry (five paths; history cells condition on earlier drawn
+   answers), one dataset of 300 per path. S-modal: the most probable answer
+   per item and cell. Higher values are more egalitarian on every item, as in
+   Part 3.
+3. *Quantities per dataset.* Cronbach's alpha for the five items and for
+   A421–A424; the A425 corrected item–total correlation; a one-factor CFA (ML,
+   items treated as continuous, survey weights for H-full) with CFI, RMSEA,
+   SRMR, and the standardized A425 loading; OLS of A425 on the mean of
+   A421–A424, alone and with female, years of education, age in decades, urban
+   residence, and wave dummies.
+4. *Decision rules reported.* Whether deleting A425 raises alpha; whether A425
+   is kept by an item–total correlation of at least 0.30 or a loading of at
+   least 0.40; whether the five-item alpha reaches 0.70.
+5. *Comparison.* Each synthetic value against the 2.5–97.5 percentiles of
+   H-300 and against H-full.
+6. *Not done.* Gemma 4 12B (no sampled-history ledger, so its history cells
+   have no drawn answers); an ordinal CFA.
+
+Scripts: `scripts/25_export_drawn_answers.py` (profile-level output, written
+outside the repository) and `scripts/26_downstream_statistics.R`. Aggregate
+tables: `output/v2/exploratory_downstream_*.csv` and
+`exploratory_downstream_metadata.json`.

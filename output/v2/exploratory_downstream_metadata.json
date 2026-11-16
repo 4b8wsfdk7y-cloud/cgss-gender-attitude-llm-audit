@@ -1,0 +1,33 @@
+{
+  "plan": "PREREGISTRATION_V2.md, 2026-11-15 entry (exploratory; recorded after the run)",
+  "benchmark_rds_md5": "5f58fcc3a6aff6d124a6aa9ad0956433",
+  "synthetic_csv_md5": "e8cc13b56966656e5c779b54bff4682d",
+  "human_n": 31177,
+  "matched_n": 296,
+  "synthetic_n_per_dataset": 300,
+  "drawn_paths": 5,
+  "cells": ["A0-B0-C0", "A0-B0-C1", "A0-B1-C0", "A0-B1-C1", "A1-B0-C0", "A1-B0-C1", "A1-B1-C0", "A1-B1-C1"],
+  "sampling_range": {
+    "replicates": 1000,
+    "seed": 20261115,
+    "per_wave": 100,
+    "draw": "with replacement, probability proportional to the survey weight",
+    "share_of_samples": {
+      "drop_a425_raises_alpha": 0.999,
+      "keep_a425_item_total_0.30": 0,
+      "keep_a425_loading_0.40": 0,
+      "alpha5_at_least_0.70": 0.014
+    }
+  },
+  "coding": "higher = more egalitarian; A421-A424 reversed as 6 - x",
+  "cfa": "one factor, ML, items treated as continuous, std.lv; survey weights for H-full only",
+  "regression": "OLS; controls female, educ_years, age/10, urban_residence, wave dummies",
+  "cfa_failures": [
+    {
+      "population": "S-modal",
+      "cell": "A0-B0-C1"
+    }
+  ],
+  "lavaan": "0.7.3",
+  "r": "R version 4.5.2 (2025-10-31)"
+}

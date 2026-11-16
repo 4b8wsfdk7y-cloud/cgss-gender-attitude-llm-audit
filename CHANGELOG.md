@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added (2026-11-15, exploratory, plan recorded in `PREREGISTRATION_V2.md` after the run)
+
+- Downstream statistics: Cronbach's alpha, a one-factor CFA, and OLS of A425 on
+  the A421–A424 index, on CGSS (full sample and a 300-respondent sampling
+  range) and on Qwen's drawn and most-probable answers in each factorial cell.
+  `scripts/25_export_drawn_answers.py` writes the profile-level datasets
+  outside the repository; `scripts/26_downstream_statistics.R` writes
+  `output/v2/exploratory_downstream_*.csv` and
+  `exploratory_downstream_metadata.json`. README, the paper, and the results
+  page do not yet report them.
+
 ### Added (2026-10-31, second model, pre-specified in `PREREGISTRATION_V2.md` before each part was run)
 
 - Gemma 4 12B (`mlx-community/gemma-4-12B-it-4bit`) as a second model: the
