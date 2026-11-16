@@ -16,7 +16,7 @@
 [English](README.md) · [中文](README.zh-CN.md)
 
 [核心结果](#核心结果) · [我做了什么](#我做了什么) · [系统架构](#系统架构) ·
-[第二版](#第二版选项概率审计2026-年-10-月) · [公开演示](#公开演示) · [数据边界](#数据与复现边界)
+[第二版](#第二版选项概率审计2026-年-10-月) · [毕业论文设计](#毕业论文设计) · [公开演示](#公开演示) · [数据边界](#数据与复现边界)
 
 </div>
 
@@ -217,6 +217,10 @@ flowchart LR
 | 图 | [`24_plot_readme_figures.R`](scripts/24_plot_readme_figures.R) 画两份 README 的图；脚本 10、20、21 画 `docs/` 中结果页的图 |
 
 选项概率的提取和析因提示词在 [`src/survey_llm_eval/probabilities.py`](src/survey_llm_eval/probabilities.py) 和 [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py) 中，测试在 `tests/test_probabilities.py` 和 `tests/test_factorial.py`。画图脚本只读 `output/` 中的聚合表，脚本 23 只需要本地模型；其余脚本需要获授权的 CGSS 衍生文件。
+
+## 毕业论文设计
+
+第二版实验是作者武汉大学本科毕业论文的经验主体。论文从调查作答的社会心理学出发，检验大语言模型扮演受访者时是否过度依赖自己前面的回答，并讨论政府部门和研究机构在调查工作中使用模拟受访者之前应做哪些检验。研究问题、研究设计、七章结构与仓库脚本和输出的对应关系、前期结果和待完成工作见 [`docs/thesis-design.md`](docs/thesis-design.md)。
 
 ## 公开演示
 

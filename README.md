@@ -17,7 +17,7 @@
 
 [Overview](#overview) · [Results](#results) · [What I built](#what-i-built) ·
 [Architecture](#system-architecture) · [v2 update](#v2-option-probability-audit-october-2026) ·
-[Quick start](#public-quick-start) · [Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts)
+[Thesis design](#undergraduate-thesis-design) · [Quick start](#public-quick-start) · [Full pilot](#run-the-authorized-pilot) · [Papers](#research-artifacts)
 
 </div>
 
@@ -459,6 +459,17 @@ and [`src/survey_llm_eval/factorial.py`](src/survey_llm_eval/factorial.py),
 with tests in `tests/test_probabilities.py` and `tests/test_factorial.py`. The
 figure scripts read only the aggregate tables in `output/`, and script 23 needs
 only the local model; the other scripts need the licensed CGSS-derived files.
+
+## Undergraduate thesis design
+
+The v2 experiment is the empirical core of the author's undergraduate thesis
+at Wuhan University. The thesis draws on the social psychology of survey
+response to test whether an LLM playing a respondent relies on its own earlier
+answers more than those answers warrant, and what checks public agencies and
+research institutions should run before using simulated respondents in survey
+work. The research questions, design, chapter outline mapped to the scripts and
+outputs in this repository, results so far, and remaining work are in
+[`docs/thesis-design.md`](docs/thesis-design.md) (Chinese).
 
 ## Public quick start
 
