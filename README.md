@@ -48,6 +48,10 @@ human-sampling reference range.
 > that coherence (+0.38 on the preregistered estimand, +0.31 when the earlier
 > answers are sampled), and the direction of the item-mean errors changes with
 > the configuration. See [v2](#v2-option-probability-audit-october-2026).
+>
+> **November 2026 update.** On eight CGSS 2012 trust items the stranger item
+> is again far more tied to the other items than in CGSS, but answer history
+> adds much less (+0.09): most of the excess is already there without it.
 
 ## Results
 
@@ -429,6 +433,54 @@ tables.
 - With one model per developer, the differences between the two models are
   described and not attributed to the developer or to training data.
 
+**Second battery: CGSS 2012 trust items (exploratory, 17–18 November 2026)**
+
+Does the effect of answer history recur on items from another domain? Eight of
+the sixteen CGSS 2012 trust items (N16: relatives, neighbours, strangers,
+doctors, teachers, local officials, central officials, police; 1–4, higher is
+more trust) were scored with Qwen3.5-9B in the same eight cells, with the most
+probable answer history, for 300 new CGSS 2012 profiles: 19,200 forward
+passes, with at least 0.985 of the probability on the four options in every
+record. In CGSS the items form three blocks (interpersonal, occupations,
+public authorities), and the stranger item hardly correlates with the others,
+so it plays the role of A425. The design was preregistered on 17 November
+before the run (`4fbd6a7`). One departure is recorded in the 18 November
+entry: an interim look at the primary outcome on 70 profiles, taken before the
+survey-trained HGB was fitted; nothing in the analysis was changed after it.
+The aggregate tables are in [`output/v2/trust/`](output/v2/trust/).
+
+| Ranges over the eight cells unless stated | Qwen3.5-9B | HGB | CGSS 2012, weighted |
+|---|---:|---:|---:|
+| Stranger item: mean absolute correlation with the other seven, cells without history | 0.19, 0.57–0.67 | 0.14 | 0.09 |
+| Same, cells with history | 0.57–0.65 | | |
+| B: answer history [95% CI] (gender battery: +0.379) | +0.087 [0.056, 0.118] | | |
+| A × B × C [95% CI] | −0.573 [−0.662, −0.477] | | |
+| Central minus local officials, mean trust | 0.89–1.90 | 0.41 | 0.43 |
+| Correlation of trust in local and central officials | 0.61–0.88 | 0.64 | 0.56 |
+| Mean correlation within blocks | 0.66–0.86 | 0.63 | 0.47 |
+| Mean correlation between blocks, without / with history | 0.37–0.57 / 0.16–0.40 | 0.53 | 0.28 |
+| Mean absolute error of item means, without / with history | 0.29–0.52 / 0.21–0.29 | | |
+
+- *What recurs.* The main effect of answer history on the stranger item is
+  positive, and in every cell the stranger item and the items within each
+  block are more closely tied than in CGSS.
+- *What differs.* The history effect is a quarter of the gender battery's and
+  depends on the other two factors: +0.38 when the block is visible with plain
+  output (A1-C0), and between −0.08 and +0.08 in the other three combinations.
+  Three of the four cells without history already put the stranger item at
+  0.57–0.67, four to five times the HGB value from the same demographics, so
+  on this battery the excess coherence is mostly present before any history is
+  shown. History lowers the correlations between blocks by 0.20 [0.18, 0.22],
+  to below the CGSS value in A1-B1-C0 and A1-B1-C1 (0.16 and 0.19), and does
+  not change the correlation of the two officials items (+0.001 [−0.032,
+  0.033]).
+- In every cell the model puts trust in central officials 0.89–1.90 points
+  above trust in local officials, 2.1 to 4.4 times the CGSS gap, whether or
+  not history is shown.
+- With one model and one wave, these results show that the source of the
+  structural error depends on the battery; they do not identify why the trust
+  items are tied together without history.
+
 **What v2 does not show**
 
 - v2 is not a replication or validation of v1. Beyond the thinking context,
@@ -451,6 +503,7 @@ tables.
 | Measurement models | [`12_measurement_models.R`](scripts/12_measurement_models.R) |
 | Exploratory analyses | scripts 15–19, [`22_calibrate_with_human_sample.py`](scripts/22_calibrate_with_human_sample.py), [`23_probe_questionnaire_exposure.py`](scripts/23_probe_questionnaire_exposure.py) |
 | Second model | scripts 07, 11, and 15 with `--model` pointing to Gemma; scripts 09, 13, 17, and 18 on Gemma's ledgers, writing to `output/v2/gemma4/` |
+| Trust battery | [`27_build_trust_profiles.R`](scripts/27_build_trust_profiles.R), script 07 with `--battery trust`, [`28_export_trust_ml_input.R`](scripts/28_export_trust_ml_input.R), [`29_fit_trust_hgb.py`](scripts/29_fit_trust_hgb.py), [`30_analyze_trust_replication.py`](scripts/30_analyze_trust_replication.py) |
 | Figures | [`24_plot_readme_figures.R`](scripts/24_plot_readme_figures.R) for this README; scripts 10, 20, and 21 for the results page in `docs/` |
 
 Probability extraction and the factorial prompts live in
@@ -464,10 +517,12 @@ only the local model; the other scripts need the licensed CGSS-derived files.
 
 The v2 experiment is the empirical core of the author's undergraduate thesis
 at Wuhan University. The thesis draws on the social psychology of survey
-response to test whether an LLM playing a respondent relies on its own earlier
-answers more than those answers warrant, and what checks public agencies and
-research institutions should run before using simulated respondents in survey
-work. The research questions, design, chapter outline mapped to the scripts and
+response to describe the structural errors of synthetic respondents (item
+relations that are tighter than in the human data), to trace them to their
+sources with the factorial design (answer history for the gender battery,
+little of it for the trust battery), and to ask what checks public agencies
+and research institutions should run before using simulated respondents in
+survey work. The research questions, design, chapter outline mapped to the scripts and
 outputs in this repository, results so far, and remaining work are in
 [`docs/thesis-design.md`](docs/thesis-design.md) (Chinese).
 
