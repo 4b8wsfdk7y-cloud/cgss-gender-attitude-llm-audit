@@ -32,7 +32,10 @@ from mlx_lm import load
 from mlx_lm.models.cache import make_prompt_cache
 
 from survey_llm_eval.factorial import (
+    BATTERIES,
     CELLS,
+    GENDER,
+    Battery,
     build_prompt,
     cell_from_name,
     item_ids,
@@ -40,7 +43,6 @@ from survey_llm_eval.factorial import (
 )
 from survey_llm_eval.probabilities import modal_option, normalize_option_logprobs
 
-SCALE = (1, 2, 3, 4, 5)
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL = Path.home() / ".lmstudio/models/lmstudio-community/Qwen3.5-9B-MLX-4bit"
 DEFAULT_OUTPUT = Path.home() / "Projects/restricted-data/surveyllm-v2/logprobs"
@@ -52,6 +54,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default=str(DEFAULT_MODEL))
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT))
     parser.add_argument("--cells", nargs="+", default=[cell.name for cell in CELLS])
+    parser.add_argument("--battery", choices=sorted(BATTERIES), default=GENDER.name,
+                        help="item battery; gender is the preregistered v2 battery")
     parser.add_argument("--history", choices=("greedy", "sampled"), default="greedy")
     parser.add_argument("--paths", type=int, default=1, help="history paths per profile")
     parser.add_argument("--seed", type=int, default=20261013)
@@ -118,10 +122,11 @@ class OptionScorer:
     the previous one, processes only the new tokens.
     """
 
-    def __init__(self, model_dir: Path) -> None:
+    def __init__(self, model_dir: Path, battery: Battery = GENDER) -> None:
         self.model, self.tokenizer = load(str(model_dir))
+        self.battery = battery
         self.option_ids: dict[int, int] = {}
-        for option in SCALE:
+        for option in battery.options:
             ids = self.tokenizer.encode(str(option), add_special_tokens=False)
             if len(ids) != 1:
                 raise RuntimeError(f"Option {option} is not a single token: {ids}")
@@ -221,7 +226,8 @@ class OptionScorer:
         for the five probabilities to be mutually exclusive.
         """
         base = self.tokens(text)
-        fulls = {option: self.tokens(text + label) for option, label in label_continuations()}
+        fulls = {option: self.tokens(text + label)
+                 for option, label in label_continuations(self.battery)}
         if any(full[: len(base)] != base for full in fulls.values()):
             raise RuntimeError("A label continuation changes the prompt tokenization")
         tails = {option: full[len(base):] for option, full in fulls.items()}
@@ -299,15 +305,18 @@ def main() -> int:
     if REPO_ROOT in output_dir.resolve().parents or output_dir.resolve() == REPO_ROOT:
         raise SystemExit("Profile-linked outputs must be written outside the repository")
 
+    if args.battery != GENDER.name and output_dir.resolve() == DEFAULT_OUTPUT.resolve():
+        raise SystemExit("Give a separate --output-dir for batteries other than gender")
     model_dir = Path(args.model).expanduser()
     profiles = load_profiles(Path(args.profiles).expanduser(), args.limit)
     cells = [cell_from_name(name) for name in args.cells]
     if args.cache and any(cell.labels for cell in cells):
         raise SystemExit("Label cells are scored with full forward passes only")
-    items = item_ids()
+    battery = BATTERIES[args.battery]
+    items = item_ids(battery.items)
     paths = args.paths if args.history == "sampled" else 1
 
-    scorer = OptionScorer(model_dir)
+    scorer = OptionScorer(model_dir, battery)
     # Neither limit changes the arithmetic. Wiring keeps the weights resident;
     # the cache limit stops freed buffers from accumulating across prompts.
     mx.set_wired_limit(mx.device_info()["max_recommended_working_set_size"])
@@ -324,6 +333,8 @@ def main() -> int:
         "mlx_version": mx.__version__,
         "mlx_lm_version": mlx_lm.__version__,
         "code_commit": git_commit(),
+        "battery": battery.name,
+        "items": list(items),
         "cells": [cell.name for cell in cells],
         "history_mode": args.history,
         "paths": paths,
@@ -370,7 +381,7 @@ def main() -> int:
                 probes = [
                     scorer.tokens(scorer.render(*build_prompt(
                         profile["persona"], 1 if cell.history else 0, cell,
-                        history=[1] if cell.history else [],
+                        history=[1] if cell.history else [], battery=battery,
                     )))
                     for cell in CELLS
                 ]
@@ -390,7 +401,8 @@ def main() -> int:
                             )
                             continue
                         messages, prefix = build_prompt(
-                            profile["persona"], index, cell, history=history
+                            profile["persona"], index, cell, history=history,
+                            battery=battery,
                         )
                         text = scorer.render(messages, prefix)
                         prompt_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -407,7 +419,7 @@ def main() -> int:
                             reference = scorer.score(tokens, use_cache=False)
                             gap = max(
                                 abs(result["distribution"][o] - reference["distribution"][o])
-                                for o in SCALE
+                                for o in battery.options
                             )
                             max_gap = max(max_gap, gap)
                             gaps.append(gap)

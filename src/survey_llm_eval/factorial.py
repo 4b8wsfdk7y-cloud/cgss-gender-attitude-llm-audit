@@ -51,6 +51,50 @@ CGSS_ITEMS: tuple[tuple[str, str], ...] = (
     ("A425", "夫妻应该均等分摊家务。"),
 )
 
+# Trust replication (PREREGISTRATION_V2.md, 2026-11-17): eight of the sixteen
+# CGSS 2012 trust items (N16), in questionnaire order. CGSS codes 1 = 非常信任
+# to 4 = 完全不信任; the prompt scale runs the other way, so higher scores mean
+# more trust, as higher scores mean more agreement in the gender battery.
+TRUST_ITEMS: tuple[tuple[str, str], ...] = (
+    ("N1601", "亲戚"),
+    ("N1603", "邻居"),
+    ("N1605", "陌生人"),
+    ("N1606", "医生"),
+    ("N1611", "老师"),
+    ("N1612", "地方政府官员"),
+    ("N1613", "中央政府官员"),
+    ("N1614", "警察"),
+)
+TRUST_STEM = "请评价你对以下这些人的信任程度："
+TRUST_SCALE = "评分标准：1=完全不信任；2=不太信任；3=比较信任；4=非常信任。"
+TRUST_LABELS: tuple[str, ...] = ("完全不信任", "不太信任", "比较信任", "非常信任")
+
+_COUNT_WORDS = {4: "四", 5: "五"}
+
+
+@dataclass(frozen=True)
+class Battery:
+    """An item battery with its question stem and response scale."""
+
+    name: str
+    items: tuple[tuple[str, str], ...]
+    stem: str
+    scale: str
+    labels: tuple[str, ...]
+
+    @property
+    def n_options(self) -> int:
+        return len(self.labels)
+
+    @property
+    def options(self) -> tuple[int, ...]:
+        return tuple(range(1, self.n_options + 1))
+
+
+GENDER = Battery("gender", CGSS_ITEMS, STEM, SCALE, LABELS)
+TRUST = Battery("trust", TRUST_ITEMS, TRUST_STEM, TRUST_SCALE, TRUST_LABELS)
+BATTERIES: dict[str, Battery] = {b.name: b for b in (GENDER, TRUST)}
+
 
 @dataclass(frozen=True)
 class Cell:
@@ -96,51 +140,61 @@ def _battery_listing(items: Sequence[tuple[str, str]]) -> str:
     return "\n".join(f"{item_id}：{text}" for item_id, text in items)
 
 
-def _single_format(item_id: str, json_format: bool, labels: bool = False) -> str:
+def _single_format(
+    item_id: str, json_format: bool, labels: bool = False, battery: Battery = GENDER
+) -> str:
+    n = battery.n_options
     if labels:
         return (
             f'只返回一个JSON对象，并同时返回文字标签和对应数字，例如：'
-            f'{{"{item_id}":{{"label":"{LABELS[0]}","score":1}}}}。唯一的键必须为{item_id}。'
-            "label只能使用评分标准中的五个文字标签，score必须是与label严格对应的1至5整数。"
+            f'{{"{item_id}":{{"label":"{battery.labels[0]}","score":1}}}}。唯一的键必须为{item_id}。'
+            f"label只能使用评分标准中的{_COUNT_WORDS[n]}个文字标签，"
+            f"score必须是与label严格对应的1至{n}整数。"
             "不要输出任何其他文字。"
         )
     if json_format:
         return (
             f'只返回一个JSON对象，例如：{{"{item_id}": 1}}。'
-            f"唯一的键必须为{item_id}，值必须为1至5的整数。不要输出任何其他文字。"
+            f"唯一的键必须为{item_id}，值必须为1至{n}的整数。不要输出任何其他文字。"
         )
-    return "只回答一个1至5的整数，不要输出任何其他文字。"
+    return f"只回答一个1至{n}的整数，不要输出任何其他文字。"
 
 
 def _sequential_format(
-    items: Sequence[tuple[str, str]], json_format: bool, labels: bool = False
+    items: Sequence[tuple[str, str]], json_format: bool, labels: bool = False,
+    battery: Battery = GENDER,
 ) -> str:
+    n = battery.n_options
     ids = "、".join(item_id for item_id, _ in items)
     if labels:
         return (
             f"只返回一个JSON对象，键依次为{ids}。每个题项必须同时返回文字标签和对应数字，"
-            f'例如：{{"{items[0][0]}":{{"label":"{LABELS[0]}","score":1}},...}}。'
-            "label只能使用评分标准中的五个文字标签，score必须是与label严格对应的1至5整数。"
+            f'例如：{{"{items[0][0]}":{{"label":"{battery.labels[0]}","score":1}},...}}。'
+            f"label只能使用评分标准中的{_COUNT_WORDS[n]}个文字标签，"
+            f"score必须是与label严格对应的1至{n}整数。"
             "不要输出任何其他文字。"
         )
     if json_format:
         return (
-            f"只返回一个JSON对象，键依次为{ids}，值必须为1至5的整数，"
+            f"只返回一个JSON对象，键依次为{ids}，值必须为1至{n}的整数，"
             f'例如：{{"{items[0][0]}": 1, ...}}。不要输出任何其他文字。'
         )
     return (
-        f"请依次回答{ids}，每行一个1至5的整数，共{len(items)}行。"
+        f"请依次回答{ids}，每行一个1至{n}的整数，共{len(items)}行。"
         "不要输出任何其他文字。"
     )
 
 
-def _labelled(item_id: str, answer: int) -> str:
-    return f'"{item_id}":{{"label":"{LABELS[answer - 1]}","score":{answer}}}'
+def _labelled(item_id: str, answer: int, battery: Battery = GENDER) -> str:
+    return f'"{item_id}":{{"label":"{battery.labels[answer - 1]}","score":{answer}}}'
 
 
-def _answer_text(item_id: str, answer: int, json_format: bool, labels: bool = False) -> str:
+def _answer_text(
+    item_id: str, answer: int, json_format: bool, labels: bool = False,
+    battery: Battery = GENDER,
+) -> str:
     if labels:
-        return "{" + _labelled(item_id, answer) + "}"
+        return "{" + _labelled(item_id, answer, battery) + "}"
     return f'{{"{item_id}": {answer}}}' if json_format else str(answer)
 
 
@@ -149,13 +203,18 @@ def build_prompt(
     target_index: int,
     cell: Cell,
     history: Sequence[int] = (),
-    items: Sequence[tuple[str, str]] = CGSS_ITEMS,
+    items: Sequence[tuple[str, str]] | None = None,
+    battery: Battery = GENDER,
 ) -> tuple[list[dict[str, str]], str]:
     """Return (messages, assistant_prefix) for one item in one cell.
 
     ``history`` holds the answers to items before ``target_index`` and is
-    required exactly when the cell includes answer history.
+    required exactly when the cell includes answer history. ``battery`` sets
+    the items, stem and response scale; ``items`` overrides the battery's items.
     """
+    if items is None:
+        items = battery.items
+    stem, scale = battery.stem, battery.scale
     if not 0 <= target_index < len(items):
         raise IndexError("target_index is outside the item battery")
     if cell.history and len(history) != target_index:
@@ -169,13 +228,13 @@ def build_prompt(
 
     if cell.battery and cell.history:
         user = "\n\n".join(
-            [intro, STEM + "\n" + _battery_listing(items), SCALE,
-             _sequential_format(items, cell.json_format, cell.labels)]
+            [intro, stem + "\n" + _battery_listing(items), scale,
+             _sequential_format(items, cell.json_format, cell.labels, battery)]
         )
         messages.append({"role": "user", "content": user})
         if cell.labels:
             answered = ",".join(
-                _labelled(items[i][0], answer) for i, answer in enumerate(history)
+                _labelled(items[i][0], answer, battery) for i, answer in enumerate(history)
             )
             prefix = "{" + (answered + "," if answered else "") + f'"{item_id}":{{"label":"'
         elif cell.json_format:
@@ -189,8 +248,8 @@ def build_prompt(
 
     if cell.battery:
         user = "\n\n".join(
-            [intro, STEM + "\n" + _battery_listing(items), SCALE,
-             f"请只回答其中的{item_id}。" + _single_format(item_id, cell.json_format, cell.labels)]
+            [intro, stem + "\n" + _battery_listing(items), scale,
+             f"请只回答其中的{item_id}。" + _single_format(item_id, cell.json_format, cell.labels, battery)]
         )
         messages.append({"role": "user", "content": user})
         return messages, _target_prefix(item_id, cell.json_format, cell.labels)
@@ -199,8 +258,8 @@ def build_prompt(
         for index in range(target_index + 1):
             current_id, current_text = items[index]
             question = "\n\n".join(
-                [STEM + "\n" + f"{current_id}：{current_text}", SCALE,
-                 _single_format(current_id, cell.json_format, cell.labels)]
+                [stem + "\n" + f"{current_id}：{current_text}", scale,
+                 _single_format(current_id, cell.json_format, cell.labels, battery)]
             )
             content = intro + "\n\n" + question if index == 0 else question
             messages.append({"role": "user", "content": content})
@@ -208,13 +267,13 @@ def build_prompt(
                 messages.append(
                     {"role": "assistant",
                      "content": _answer_text(current_id, history[index], cell.json_format,
-                                             cell.labels)}
+                                             cell.labels, battery)}
                 )
         return messages, _target_prefix(item_id, cell.json_format, cell.labels)
 
     user = "\n\n".join(
-        [intro, STEM + "\n" + f"{item_id}：{item_text}", SCALE,
-         _single_format(item_id, cell.json_format, cell.labels)]
+        [intro, stem + "\n" + f"{item_id}：{item_text}", scale,
+         _single_format(item_id, cell.json_format, cell.labels, battery)]
     )
     messages.append({"role": "user", "content": user})
     return messages, _target_prefix(item_id, cell.json_format, cell.labels)
@@ -226,7 +285,7 @@ def _target_prefix(item_id: str, json_format: bool, labels: bool = False) -> str
     return f'{{"{item_id}": ' if json_format else ""
 
 
-def label_continuations() -> tuple[tuple[int, str], ...]:
+def label_continuations(battery: Battery = GENDER) -> tuple[tuple[int, str], ...]:
     """Text completing each answer after a C2 prefix.
 
     The closing quote is left out: the tokenizer merges it with the following
@@ -234,7 +293,7 @@ def label_continuations() -> tuple[tuple[int, str], ...]:
     label tokens alone gives a proper distribution as long as no label's
     tokens are a prefix of another's, which the scorer checks.
     """
-    return tuple(enumerate(LABELS, start=1))
+    return tuple(enumerate(battery.labels, start=1))
 
 
 def item_ids(items: Sequence[tuple[str, str]] = CGSS_ITEMS) -> tuple[str, ...]:

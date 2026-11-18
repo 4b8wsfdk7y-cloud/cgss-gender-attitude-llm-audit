@@ -575,3 +575,66 @@ Scripts: `scripts/25_export_drawn_answers.py` (profile-level output, written
 outside the repository) and `scripts/26_downstream_statistics.R`. Aggregate
 tables: `output/v2/exploratory_downstream_*.csv` and
 `exploratory_downstream_metadata.json`.
+
+**2026-11-17, a second item battery (trust replication), fixed before any of
+its probabilities were computed for study profiles.** Exploratory replication;
+it changes no preregistered estimand.
+
+1. *Question.* Does the effect of answer history on cross-item coherence
+   (Part 2) recur on a battery from another domain whose human structure is
+   known?
+2. *Battery.* Eight of the sixteen CGSS 2012 trust items (N16, "您对下面这些人的
+   信任程度如何？"), in questionnaire order: N1601 亲戚, N1603 邻居, N1605 陌生人,
+   N1606 医生, N1611 老师, N1612 地方政府官员, N1613 中央政府官员, N1614 警察.
+   The selection was made on 2026-11-17 after computing weighted Pearson
+   correlations of all sixteen items on the 5,139 respondents with complete
+   answers; no model output for these items existed then. In those data the
+   items form three blocks (interpersonal; occupations; public authorities),
+   the stranger item correlates 0.04–0.23 with the other fifteen, and trust in
+   central officials exceeds trust in local officials by 0.40 on the 1–4
+   scale (correlation 0.59). The eight items keep two interpersonal items, the
+   stranger item, two public-service occupations, and three public
+   authorities.
+3. *Prompt and scale.* System prompt, introduction, and persona construction
+   as for the gender battery; stem "请评价你对以下这些人的信任程度："; scale
+   "1=完全不信任；2=不太信任；3=比较信任；4=非常信任", so higher scores mean more
+   trust. CGSS codes run the other way and are recoded as 5 − code. The
+   options 1–4 are single tokens; the distribution is their probability
+   renormalized over the four options, and the mass on them is recorded.
+   Implementation: `TRUST` in `src/survey_llm_eval/factorial.py`; the gender
+   prompts are unchanged (checked string by string for all cells).
+4. *Profiles.* 300 CGSS 2012 respondents with complete demographics (coded as
+   in `scripts/00_build_authorized_benchmark.R` for 2012), valid answers on the
+   eight items, and a positive weight (5,595 eligible), sampled with the scheme
+   of `scripts/01_prepare_profiles.R`: strata by sex × education group × urban
+   residence, largest-remainder allocation proportional to the weight, and
+   weighted sampling without replacement within strata, seed 20261117
+   (`scripts/27_build_trust_profiles.R`). One wave only; outputs are written
+   outside the repository.
+5. *Run.* Qwen3.5-9B with the weights of the Scope section, thinking
+   disabled, the eight factorial cells with modal answer histories, one full
+   forward pass per prompt, seed 20261013: `scripts/07_run_logprob_audit.py
+   --battery trust --history greedy`. A smoke test on three profiles checks
+   the option mass and timing; its probabilities are not analysed.
+6. *Primary outcome.* For each cell, the mean absolute Pearson correlation
+   between the expected score on N1605 and the expected scores on the other
+   seven items, across the 300 profiles. Main effects and interactions of A,
+   B, and C as in Part 2, with a profile-cluster bootstrap of 2,000
+   replicates (one wave, so no strata). The gender battery predicts a positive
+   main effect of B; it is reported whatever its sign or interval.
+7. *Secondary outcomes, by cell.* (a) The correlation across profiles between
+   the expected scores on N1612 and N1613, and the population mean difference
+   N1613 − N1612 compared with the weighted CGSS difference. (b) The mean
+   correlation within the blocks {N1601, N1603}, {N1606, N1611}, and {N1612,
+   N1613, N1614}, and the mean correlation between items of different blocks.
+   (c) Item-level absolute mean error against the weighted CGSS 2012 means.
+   (d) Mean valid-option mass; cells below 0.90 are flagged.
+8. *References.* Weighted CGSS 2012 individual-level values on the eligible
+   respondents; and a survey-trained HGB with the features and
+   hyperparameters of `ml/config.json`, fitted on the eligible respondents,
+   five-fold out of fold, whose expected scores for the 300 profiles give the
+   information-matched value of each outcome. The HGB is fitted after the
+   model run and before any comparison.
+9. *Not part of this entry.* Human-history cells, sampled histories, a second
+   model, and larger models; any of them would be fixed in a later entry
+   before it is run.

@@ -92,3 +92,31 @@ class FactorialPromptTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TrustBatteryTest(unittest.TestCase):
+    def test_trust_items_and_scale(self) -> None:
+        from survey_llm_eval.factorial import BATTERIES, TRUST
+
+        self.assertIs(BATTERIES["trust"], TRUST)
+        self.assertEqual(TRUST.options, (1, 2, 3, 4))
+        self.assertEqual(len(TRUST.items), 8)
+        messages, prefix = build_prompt(
+            PERSONA, 2, cell_from_name("A1-B1-C1"), history=[4, 3], battery=TRUST
+        )
+        text = user_text(messages)
+        self.assertIn("1=完全不信任", text)
+        self.assertIn("值必须为1至4的整数", text)
+        self.assertNotIn("1至5", text)
+        self.assertNotIn("A421", text)
+        self.assertEqual(prefix, '{"N1601": 4, "N1603": 3, "N1605": ')
+
+    def test_trust_single_item_format(self) -> None:
+        from survey_llm_eval.factorial import TRUST
+
+        messages, prefix = build_prompt(PERSONA, 0, cell_from_name("A0-B0-C0"), battery=TRUST)
+        text = user_text(messages)
+        self.assertIn("N1601：亲戚", text)
+        self.assertNotIn("N1603", text)
+        self.assertIn("只回答一个1至4的整数", text)
+        self.assertEqual(prefix, "")
