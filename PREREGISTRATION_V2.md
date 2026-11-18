@@ -638,3 +638,36 @@ it changes no preregistered estimand.
 9. *Not part of this entry.* Human-history cells, sampled histories, a second
    model, and larger models; any of them would be fixed in a later entry
    before it is run.
+
+**2026-11-18, trust replication: an interim look, and the run's outcome,
+recorded after the analysis.** No analysis choice of the 2026-11-17 entry
+changed.
+
+1. *Interim look.* On 2026-11-17 at about 22:15 (UTC−6), with 70 of the 300
+   profiles complete, the primary outcome was computed by cell from the
+   partial ledger and compared with the weighted CGSS 2012 value. This came
+   before the HGB was fitted and so departs from the order of point 8 of the
+   2026-11-17 entry. The interim values (B main effect +0.18; 0.23–0.71
+   without answer history and 0.61–0.81 with it; CGSS 0.09) were not used
+   to change the battery, prompts, profiles, outcomes, or analysis code.
+2. *Run.* 19,200 records, one per cell, profile, and item, with no duplicates;
+   code commit 4fbd6a7; minimum valid-option mass 0.985, so no cell is
+   flagged. The HGB was then fitted (`scripts/28_export_trust_ml_input.R`,
+   `scripts/29_fit_trust_hgb.py`), and the analysis of points 6–8 was run
+   (`scripts/30_analyze_trust_replication.py`). Aggregate tables:
+   `output/v2/trust/`.
+3. *Primary outcome.* The B main effect is +0.087 (95% interval 0.056 to
+   0.118), positive as for the gender battery (+0.379) but smaller, and the
+   interactions are large (ABC −0.573). The B simple effects are +0.38 at
+   A1-C0 and between −0.08 and +0.08 in the other three combinations of A
+   and C. Seven of the eight cells lie between 0.57 and 0.67, including three
+   of the four cells without answer history; A1-B0-C0 is 0.19. The weighted
+   CGSS value is 0.093 and the information-matched HGB value 0.139.
+4. *Secondary outcomes.* The B main effect on the N1612–N1613 correlation is
+   +0.001 (−0.032 to 0.033) and on the mean between-block correlation −0.198
+   (−0.219 to −0.179). In every cell the central-minus-local mean difference
+   (0.89–1.90) exceeds the weighted CGSS difference (0.43).
+5. *Note.* numpy emits overflow and divide-by-zero warnings from the matrix
+   product that forms the HGB expected scores; the probabilities are finite
+   and the product equals an element-wise sum, so the warnings do not affect
+   the values.

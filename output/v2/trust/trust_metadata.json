@@ -1,0 +1,15 @@
+{
+  "preregistration": "PREREGISTRATION_V2.md, 2026-11-17 entry",
+  "ledger_sha256": "dc49cccb1d3f4d7be49453496032e5bae018393b88e0e3d755ab0424a54a1a54",
+  "records": 19200,
+  "profiles": 300,
+  "human_sha256": "0b33c56d3ea7700fd7c37866bff23311f2bdd115cc43063dfe6f9065433865cb",
+  "hgb_sha256": "f2c1ea95ab84567c7eb985d036954fbe272a48295253a977922f84a782eff29d",
+  "run_code_commit": "4fbd6a75e0d4ac68fa8f36ac8954e1a026b75119",
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled with replacement; all cells and items move together",
+  "interaction_definition": "differences of simple effects, not halved",
+  "expected_score": "option probabilities renormalised over 1-4",
+  "mass_flag_threshold": 0.9
+}

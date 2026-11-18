@@ -1,0 +1,65 @@
+{
+  "data_sha256": "0b33c56d3ea7700fd7c37866bff23311f2bdd115cc43063dfe6f9065433865cb",
+  "config": {
+    "seed": 20260702,
+    "folds": 5,
+    "llm_model_label": "qwen3_5_9b_neutral",
+    "llm_responses": "../output_qwen35/responses.csv",
+    "outcomes": [
+      "eq_a421",
+      "eq_a422",
+      "eq_a423",
+      "eq_a424",
+      "eq_a425"
+    ],
+    "numeric_features": [
+      "survey_year",
+      "female",
+      "age",
+      "educ_years",
+      "urban_hukou",
+      "urban_residence",
+      "partnership",
+      "econ_status"
+    ],
+    "categorical_features": [
+      "prov",
+      "marital_group"
+    ],
+    "logistic": {
+      "C": 1.0,
+      "max_iter": 600,
+      "solver": "saga"
+    },
+    "hist_gradient_boosting": {
+      "learning_rate": 0.06,
+      "max_iter": 120,
+      "max_leaf_nodes": 15,
+      "min_samples_leaf": 40,
+      "l2_regularization": 0.1
+    }
+  },
+  "model": "hist_gradient_boosting",
+  "features": [
+    "survey_year",
+    "female",
+    "age",
+    "educ_years",
+    "urban_hukou",
+    "urban_residence",
+    "partnership",
+    "econ_status",
+    "prov",
+    "marital_group"
+  ],
+  "coding": "trust items 1-4, higher = more trust",
+  "respondents": 5595,
+  "matched_profiles": 300,
+  "matched_predictions_sha256": "f2c1ea95ab84567c7eb985d036954fbe272a48295253a977922f84a782eff29d",
+  "versions": {
+    "scikit-learn": "1.7.2",
+    "scipy": "1.14.1",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3"
+  }
+}
