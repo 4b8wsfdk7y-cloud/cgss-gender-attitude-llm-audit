@@ -1,0 +1,4 @@
+reference,n,m201_mean_abs_correlation,m101_mean_abs_correlation,all_pairs_mean_abs_correlation,item_mean_abs_error_vs_cgss
+"CGSS 2012, weighted, eligible respondents",5607,0.05296143988351106,0.097634305560517,0.13367555082348792,0.0
+"HGB expected scores, matched profiles",300,0.04735696262154935,0.42586406493295886,0.4134147720365454,0.008031845201224463
+"matched respondents' answers, unweighted (descriptive)",300,0.05626234052899228,0.1154053091755825,0.13577414422709616,0.017025450427324174

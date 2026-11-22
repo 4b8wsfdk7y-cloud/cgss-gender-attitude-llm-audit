@@ -1,0 +1,27 @@
+{
+  "preregistration": "PREREGISTRATION_V2.md, 2026-11-22 entry",
+  "gender_ledger_sha256": "6940c55829066f9e0bd1edf77638e4f01cd3d3e88c908b52d1d1e49a4be6c4d8",
+  "gender_wording_ledger_sha256": "0315d3c7e24cad9e0ad0ed9449945630ac1320205ee151d19fbe2d5514df6382",
+  "trust_ledger_sha256": "dc49cccb1d3f4d7be49453496032e5bae018393b88e0e3d755ab0424a54a1a54",
+  "trust_wording_ledger_sha256": "bac3994ee5c5ba49c2d11221ad6b870e53a396f02e6b6e93af25d0369fe19324",
+  "issp_ledger_sha256": "a3deb23061741f8c56cb2d74cd7a93489a5967062a7874d0ecd7cbb0b9074691",
+  "issp_wording_ledger_sha256": "5d306ff7b900460774199bfc25683ee84aeebd5a69eba513fa15394673ab1466",
+  "cells": [
+    "A0-B0-C0",
+    "A0-B0-C1"
+  ],
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled within battery (within wave for A421-A425); original and reworded scores move together",
+  "control_equivalence_bound": 0.1,
+  "verdicts": {
+    "M105": true,
+    "M201": true,
+    "A423": true,
+    "A422": true,
+    "N1605": true
+  },
+  "cue_predictions_all_hold": true,
+  "control_predictions_all_hold": true,
+  "overall": "supported"
+}

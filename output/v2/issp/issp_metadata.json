@@ -1,0 +1,17 @@
+{
+  "preregistration": "PREREGISTRATION_V2.md, 2026-11-18 entry",
+  "ledger_sha256": "a3deb23061741f8c56cb2d74cd7a93489a5967062a7874d0ecd7cbb0b9074691",
+  "records": 16800,
+  "profiles": 300,
+  "human_sha256": "8160216cb7c16b6e67a8b3770f3f6ecfdb1c8f2dbd8cba0ef3245f0820384896",
+  "hgb_sha256": "8c4f301789320416047e114a6691b4be2bdb89305c49499153587bed24221387",
+  "run_code_commit": "0b38130f82b8f3fd9a03baade254cd669930f1ee",
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled with replacement; all cells, items, and the HGB value move together",
+  "interaction_definition": "differences of simple effects, not halved",
+  "source_comparison": "E0 = mean of the four B0 cells minus HGB; D = B - E0",
+  "source_verdict": "the excess without history is the larger source",
+  "expected_score": "option probabilities renormalised over 1-5",
+  "mass_flag_threshold": 0.9
+}
