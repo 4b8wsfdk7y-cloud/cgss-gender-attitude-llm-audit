@@ -671,3 +671,79 @@ changed.
    product that forms the HGB expected scores; the probabilities are finite
    and the product equals an element-wise sum, so the warnings do not affect
    the values.
+
+**2026-11-18, a second gender battery (ISSP 2012 module in CGSS 2012), fixed
+before any of its probabilities were computed for study profiles.**
+Exploratory replication; it changes no preregistered estimand. It was added
+after the trust results above were known, for the reason given in point 1.
+
+1. *Question.* On the trust battery the main effect of answer history was
+   positive but small, and most of the excess coherence was present without
+   history; on A421–A425 it came from history. This entry asks whether a
+   second gender-attitude battery behaves like A421–A425, which would point
+   to the attitude domain, or like the trust battery, which would point to
+   properties of the particular battery.
+2. *Battery.* The seven agree–disagree gender-role items of the ISSP 2012
+   Family and Changing Gender Roles module as fielded in CGSS 2012 (section
+   M, answered by 5,946 respondents), in questionnaire order: m101 有工作的妈妈
+   也能和小孩关系亲密, m102 小孩上学前妈妈工作会影响小孩, m103 女的全职工作家庭
+   生活会受影响, m104 女人真正想要的是家庭和孩子, m105 家庭妇女和工作一样有成就
+   感, m201 夫妻双方都应该挣钱养家, m202 男人挣钱、女人顾家. Items m301 and m302
+   use another response scale and are not included. On 2026-11-18, before any
+   model output for these items existed, weighted Pearson correlations were
+   computed on the 5,607 eligible respondents of point 4: m201 has a mean
+   absolute correlation of 0.053 with the other six (the others 0.098–0.184),
+   the largest absolute correlation is 0.45 (m102–m103), and the mean over
+   the 21 pairs is 0.134. m201 is the target item because its value is the
+   lowest, the role A425 has in the first battery. m202 is close in content
+   to A421 (weighted absolute correlation 0.37 among the section M
+   respondents with valid answers on both); m101 and m201
+   are worded in the egalitarian direction, the others in the traditional
+   one.
+3. *Prompt and scale.* System prompt, introduction, persona construction, and
+   stem as for A421–A425; scale "1=非常不同意；2=不同意；3=无所谓同意不同意；
+   4=同意；5=非常同意", with the CGSS section M labels, so higher scores mean more
+   agreement. CGSS codes run the other way and are recoded as 6 − code;
+   "无法选择" (8) is missing. Implementation: `ISSP` in
+   `src/survey_llm_eval/factorial.py`; the gender and trust prompts are
+   unchanged.
+4. *Profiles.* 300 CGSS 2012 respondents with complete demographics (coded as
+   for the trust battery), valid answers 1–5 on all seven items, and a
+   positive weight (5,607 eligible), sampled with the scheme of the trust
+   entry, seed 20261118 (`scripts/31_build_issp_profiles.R`). Outputs are
+   written outside the repository.
+5. *Run.* Qwen3.5-9B as for the trust battery, thinking disabled, the eight
+   cells with modal answer histories, one full forward pass per prompt, seed
+   20261013: `scripts/07_run_logprob_audit.py --battery issp --history
+   greedy`, 16,800 records. A smoke test on three profiles checks the option
+   mass and timing; its probabilities are not analysed. Until the run has
+   finished, only the record count and the log are read.
+6. *Primary outcome.* For each cell, the mean absolute Pearson correlation
+   between the expected score on m201 and the expected scores on the other
+   six items, across the 300 profiles. Main effects and interactions of A, B,
+   and C as in Part 2, with a profile-cluster bootstrap of 2,000 replicates.
+   The first gender battery predicts a positive main effect of B; it is
+   reported whatever its sign or interval.
+7. *Source comparison.* E0 is the mean of the primary outcome over the four
+   cells without history minus its HGB value (point 9), and D = B − E0, with
+   the HGB value recomputed on every bootstrap draw. If the 95% interval of D
+   lies above zero, answer history is reported as the larger source of the
+   excess; if it lies below zero, the excess present without history is; if
+   it includes zero, the comparison is undetermined. The rule was written
+   after the results of both earlier batteries were known; their point
+   values, computed for context only, are D = +0.36 for A421–A425 (B 0.379,
+   E0 0.022) and D = −0.28 for the trust battery (B 0.087, E0 0.370). The
+   first gender battery predicts D > 0.
+8. *Secondary outcomes, by cell.* (a) The mean absolute correlation over all
+   21 item pairs, and its B main effect. (b) The m101 outcome defined as in
+   point 6, and its B main effect. (c) Item-level absolute mean error against
+   the weighted CGSS 2012 means. (d) Mean valid-option mass; cells below 0.90
+   are flagged.
+9. *References.* Weighted CGSS 2012 values on the eligible respondents, and
+   the survey-trained HGB of the trust entry (features and hyperparameters of
+   `ml/config.json`, five-fold out of fold on the eligible respondents,
+   `scripts/29_fit_trust_hgb.py --battery issp`), fitted after the run and
+   before any comparison. The matched respondents' own answers are reported
+   as a descriptive row. Analysis: `scripts/32_analyze_issp_replication.py`.
+10. *Not part of this entry.* A questionnaire-exposure probe for these items,
+    human-history cells, sampled histories, and other models.

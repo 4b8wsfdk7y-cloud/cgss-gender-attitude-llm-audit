@@ -120,3 +120,33 @@ class TrustBatteryTest(unittest.TestCase):
         self.assertNotIn("N1603", text)
         self.assertIn("只回答一个1至4的整数", text)
         self.assertEqual(prefix, "")
+
+
+class IsspBatteryTest(unittest.TestCase):
+    def test_issp_items_and_scale(self) -> None:
+        from survey_llm_eval.factorial import BATTERIES, ISSP, STEM
+
+        self.assertIs(BATTERIES["issp"], ISSP)
+        self.assertEqual(ISSP.options, (1, 2, 3, 4, 5))
+        self.assertEqual([i for i, _ in ISSP.items],
+                         ["M101", "M102", "M103", "M104", "M105", "M201", "M202"])
+        self.assertEqual(ISSP.stem, STEM)
+        messages, prefix = build_prompt(
+            PERSONA, 5, cell_from_name("A1-B1-C0"), history=[4, 2, 2, 3, 3], battery=ISSP
+        )
+        text = user_text(messages)
+        self.assertIn("1=非常不同意", text)
+        self.assertIn("M201：夫妻双方都应该挣钱养家。", text)
+        self.assertNotIn("A421", text)
+        self.assertEqual(prefix, "4\n2\n2\n3\n3\n")
+
+    def test_issp_dialogue_history(self) -> None:
+        from survey_llm_eval.factorial import ISSP
+
+        messages, prefix = build_prompt(
+            PERSONA, 1, cell_from_name("A0-B1-C1"), history=[5], battery=ISSP
+        )
+        self.assertEqual([m["role"] for m in messages], ["system", "user", "assistant", "user"])
+        self.assertEqual(messages[2]["content"], '{"M101": 5}')
+        self.assertNotIn("M103", user_text(messages))
+        self.assertEqual(prefix, '{"M102": ')

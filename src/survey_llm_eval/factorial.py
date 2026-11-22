@@ -69,6 +69,26 @@ TRUST_STEM = "请评价你对以下这些人的信任程度："
 TRUST_SCALE = "评分标准：1=完全不信任；2=不太信任；3=比较信任；4=非常信任。"
 TRUST_LABELS: tuple[str, ...] = ("完全不信任", "不太信任", "比较信任", "非常信任")
 
+# Second gender battery (PREREGISTRATION_V2.md, 2026-11-18): the seven
+# agree-disagree gender-role items of the ISSP 2012 Family and Changing Gender
+# Roles module as fielded in CGSS 2012 (section M), in questionnaire order and
+# with the CGSS wording. CGSS codes 1 = 非常同意 to 5 = 非常不同意; the prompt
+# scale runs the other way, so higher scores mean more agreement, as in the
+# first gender battery.
+ISSP_ITEMS: tuple[tuple[str, str], ...] = (
+    ("M101", "和不工作的妈妈一样，那些有工作的妈妈也能够和自己的小孩关系亲密、稳定。"),
+    ("M102", "如果小孩还没上学，妈妈出去工作会影响小孩的成长。"),
+    ("M103", "总的来说，如果女的有全职工作，家庭生活就会受影响。"),
+    ("M104", "有工作当然好，但是大多数女人真正想要的是家庭和孩子。"),
+    ("M105", "对女人来说，做一个家庭妇女和出去工作会有一样的成就感。"),
+    ("M201", "夫妻双方都应该挣钱养家。"),
+    ("M202", "男人应该负责挣钱，女人应该负责顾家。"),
+)
+ISSP_SCALE = (
+    "评分标准：1=非常不同意；2=不同意；3=无所谓同意不同意；4=同意；5=非常同意。"
+)
+ISSP_LABELS: tuple[str, ...] = ("非常不同意", "不同意", "无所谓同意不同意", "同意", "非常同意")
+
 _COUNT_WORDS = {4: "四", 5: "五"}
 
 
@@ -93,7 +113,8 @@ class Battery:
 
 GENDER = Battery("gender", CGSS_ITEMS, STEM, SCALE, LABELS)
 TRUST = Battery("trust", TRUST_ITEMS, TRUST_STEM, TRUST_SCALE, TRUST_LABELS)
-BATTERIES: dict[str, Battery] = {b.name: b for b in (GENDER, TRUST)}
+ISSP = Battery("issp", ISSP_ITEMS, STEM, ISSP_SCALE, ISSP_LABELS)
+BATTERIES: dict[str, Battery] = {b.name: b for b in (GENDER, TRUST, ISSP)}
 
 
 @dataclass(frozen=True)
