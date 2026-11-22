@@ -60,6 +60,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--paths", type=int, default=1, help="history paths per profile")
     parser.add_argument("--seed", type=int, default=20261013)
     parser.add_argument("--limit", type=int, default=None, help="profiles per wave")
+    parser.add_argument("--items", nargs="+", default=None,
+                        help="score only these target items (cells without history only)")
     parser.add_argument("--cache", action="store_true",
                         help="reuse prefix caches (faster, but probabilities can differ "
                              "slightly from single full forward passes)")
@@ -314,6 +316,14 @@ def main() -> int:
         raise SystemExit("Label cells are scored with full forward passes only")
     battery = BATTERIES[args.battery]
     items = item_ids(battery.items)
+    targets = list(items)
+    if args.items:
+        if any(cell.history for cell in cells):
+            raise SystemExit("--items needs cells without answer history")
+        unknown = [i for i in args.items if i not in items]
+        if unknown:
+            raise SystemExit(f"Unknown items for battery {battery.name}: {unknown}")
+        targets = [i for i in items if i in args.items]
     paths = args.paths if args.history == "sampled" else 1
 
     scorer = OptionScorer(model_dir, battery)
@@ -334,7 +344,7 @@ def main() -> int:
         "mlx_lm_version": mlx_lm.__version__,
         "code_commit": git_commit(),
         "battery": battery.name,
-        "items": list(items),
+        "items": targets,
         "cells": [cell.name for cell in cells],
         "history_mode": args.history,
         "paths": paths,
@@ -372,7 +382,7 @@ def main() -> int:
     with ledger.open("a", encoding="utf-8") as out:
         for profile in profiles:
             if all((profile["profile_id"], cell.name, args.history, path, item) in done
-                   for cell in cells for path in range(paths) for item in items):
+                   for cell in cells for path in range(paths) for item in targets):
                 continue
             # Full forward passes are deterministic, so a prompt that recurs within
             # a profile (A0-B1's first item is A0-B0's A421) is scored once.
@@ -393,6 +403,8 @@ def main() -> int:
                     )
                     answers: list[int] = []
                     for index, item in enumerate(items):
+                        if item not in targets:
+                            continue
                         history = list(answers) if cell.history else []
                         key = (profile["profile_id"], cell.name, args.history, path, item)
                         if key in done:

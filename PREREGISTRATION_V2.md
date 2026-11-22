@@ -747,3 +747,68 @@ after the trust results above were known, for the reason given in point 1.
    as a descriptive row. Analysis: `scripts/32_analyze_issp_replication.py`.
 10. *Not part of this entry.* A questionnaire-exposure probe for these items,
     human-history cells, sampled histories, and other models.
+
+**2026-11-22, item-pair structure without history, recorded after it was
+computed (exploratory)**
+
+After the ISSP run, a pair-level comparison was planned in a separate note
+(its text and hash are stored in `output/v2/exploratory_pairs_metadata.json`)
+and then computed with `scripts/33_exploratory_pair_structure.py`. For the 59
+item pairs of the three batteries (Qwen3.5-9B), the mean absolute correlation
+over the four cells without history was regressed on the HGB pair correlation:
+slope 0.19 (0.14–0.25), R² 0.04, residual SD 0.23. By the note's rules this is
+"scattered", so the reading that the model adds a fixed level of covariation
+is not supported. Within A421–A425 the slope is 0.56 and all ten signs agree
+with HGB; in the trust battery strangers are grouped with doctors, teachers,
+officials, and police (0.55–0.70; HGB 0.05–0.17); M105 is placed on the
+egalitarian side (negative with M102–M104 and M202), where weighted CGSS 2012
+answers and HGB place it on the traditional side; M201 has the HGB direction
+but 0.56–0.80 in magnitude. With history the slope is 0.03. These results
+suggested the hypothesis tested in the next entry.
+
+**2026-11-22, wording experiment, fixed before any reworded item was scored**
+
+Known at the time: the results of the previous entry, and, from a dry run of
+the analysis script on the original ledgers, the original-wording values of
+the five indicators below in the two cells used here (M105 −0.708, M201 0.703,
+A423 −0.218, A422 0.618, N1605 0.619).
+
+1. *Hypothesis.* Without answer history, Qwen3.5-9B relates items through the
+   surface cues of their wording rather than through the structure of
+   respondents' answers. Changing a cue while keeping the meaning should move
+   the reworded item's correlations with the other items; replacing words by
+   near-synonyms without changing a cue should not.
+2. *Items* (`WORDING_VARIANTS` in `src/survey_llm_eval/factorial.py`; item
+   IDs, stem, scale, and persona unchanged). Cue items: M105 "对女人来说，当好
+   家庭妇女也是一种成就。" (the equality word 一样 removed); M201 "一个家光靠一个
+   人挣钱不够，夫妻都要工作。" (the normative 双方都应该 replaced by a practical
+   reason); A423 "对女人来说，嫁个好丈夫比自己工作干得好更重要。" (the idiom
+   written out). Controls: A422 "男人的能力生来就比女人强。"; N1605 "不认识的
+   人". That the rewordings keep the meaning is the researcher's judgement;
+   no respondent answered them.
+3. *Run.* Qwen3.5-9B as in the earlier entries, cells A0-B0-C0 and A0-B0-C1
+   only, where the prompt holds the target item alone, the same 300 profiles
+   per battery, one full forward pass per prompt: `scripts/07_run_logprob_audit.py
+   --battery BATTERY_wording --cells A0-B0-C0 A0-B0-C1 --items ...`, 3,000
+   records. A smoke test on one profile per wave checks option mass and that
+   prompts for unchanged items reproduce the hashes of the main runs; its
+   probabilities are not analysed. Until the run has finished only the record
+   count and the log are read.
+4. *Indicators.* Each reworded item is correlated across profiles with the
+   original scores of the other items from the main runs, per cell, then
+   averaged over the two cells (A421–A425 within wave, averaged over waves).
+   M105: mean signed correlation with M102, M103, M104, M202. M201: mean
+   absolute correlation with the other six. A423: mean signed correlation with
+   A421, A422, A424. A422: mean absolute correlation with the other four.
+   N1605: mean absolute correlation with the other seven. Profile-cluster
+   bootstrap, 2,000 replicates, seed 20261013; original and reworded scores
+   move together.
+5. *Predictions.* M105: reworded value above 0 (95% interval). M201: reworded
+   minus original below 0. A423: reworded minus original above 0. A422 and
+   N1605: the interval of reworded minus original lies within ±0.10. The
+   hypothesis is reported as supported if all five hold, not supported if none
+   holds, and partly supported otherwise, with each prediction reported.
+6. *Secondary.* Valid-option mass per item and cell; values below 0.90 are
+   flagged. Analysis: `scripts/34_analyze_wording_experiment.py`.
+7. *Not part of this entry.* Cells with battery listing or history, other
+   models, and human answers to the reworded items.

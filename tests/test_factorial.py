@@ -150,3 +150,38 @@ class IsspBatteryTest(unittest.TestCase):
         self.assertEqual(messages[2]["content"], '{"M101": 5}')
         self.assertNotIn("M103", user_text(messages))
         self.assertEqual(prefix, '{"M102": ')
+
+
+class WordingExperimentTest(unittest.TestCase):
+    def test_variants_replace_only_their_items(self) -> None:
+        from survey_llm_eval.factorial import (
+            BATTERIES, GENDER, ISSP, TRUST, WORDING_VARIANTS, with_wording)
+
+        for source in (GENDER, TRUST, ISSP):
+            variant = BATTERIES[f"{source.name}_wording"]
+            self.assertEqual(variant, with_wording(source))
+            self.assertEqual((variant.stem, variant.scale, variant.labels),
+                             (source.stem, source.scale, source.labels))
+            changed = {i for (i, a), (_, b) in zip(source.items, variant.items) if a != b}
+            self.assertEqual(changed, set(WORDING_VARIANTS[source.name]))
+        self.assertEqual(sum(len(v) for v in WORDING_VARIANTS.values()), 5)
+
+    def test_single_item_prompt_differs_only_in_the_item_text(self) -> None:
+        from survey_llm_eval.factorial import BATTERIES, ISSP
+
+        variant = BATTERIES["issp_wording"]
+        for cell in ("A0-B0-C0", "A0-B0-C1"):
+            old, old_prefix = build_prompt(PERSONA, 4, cell_from_name(cell), battery=ISSP)
+            new, new_prefix = build_prompt(PERSONA, 4, cell_from_name(cell), battery=variant)
+            self.assertEqual(old_prefix, new_prefix)
+            self.assertEqual(
+                user_text(old).replace(ISSP.items[4][1], variant.items[4][1]), user_text(new))
+            self.assertIn("M105：对女人来说，当好家庭妇女也是一种成就。", user_text(new))
+            self.assertNotIn("M201", user_text(new))
+
+    def test_original_batteries_unchanged(self) -> None:
+        from survey_llm_eval.factorial import GENDER, ISSP, TRUST
+
+        self.assertEqual(GENDER.items[2], ("A423", "干得好不如嫁得好。"))
+        self.assertEqual(TRUST.items[2], ("N1605", "陌生人"))
+        self.assertEqual(ISSP.items[5], ("M201", "夫妻双方都应该挣钱养家。"))

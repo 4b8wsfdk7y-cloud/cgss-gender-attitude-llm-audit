@@ -1,0 +1,23 @@
+{
+  "status": "exploratory, post hoc; plan fixed before any pair-level value was computed",
+  "plan_sha256": "bbde76290092d777768b34e3aa203624c2be8b2f45800b1a20eb2ce38558732a",
+  "plan": "# Exploratory: item-pair structure, model vs survey-trained HGB (written 2026-11-22 before any pair-level number was computed)\n\nStatus: exploratory, post hoc. Written after the battery-level results of A421-A425, trust and ISSP were known\n(no-history level roughly 0.4-0.7 in all three; HGB 0.45 / 0.14 / 0.05). No pair-level correlation had been computed.\n\nQuestion: does the model's between-item correlation without answer history track the correlation that demographics\nproduce in real respondents (HGB), or does it sit at a roughly fixed level?\n\nData\n- Qwen3.5-9B greedy ledgers: A421-A425 (restricted-data/surveyllm-v2/logprobs), trust (surveyllm-v2-trust/logprobs),\n  ISSP (surveyllm-v2-issp/logprobs). Gemma 4 12B: A421-A425 only (surveyllm-v2/gemma4/logprobs).\n- HGB out-of-fold predictions for the matched profiles: A421-A425 ml/output/predictions.csv (split oof,\n  hist_gradient_boosting; equality coding converted back to agreement, 6 - E for A421-A424), hgb_trust_matched.csv,\n  hgb_issp_matched.csv.\n- Expected scores from option probabilities renormalised over the valid options; all items on the prompt scale\n  (higher = more agreement / more trust).\n\nUnit: item pair within a battery; 10 + 28 + 21 = 59 pairs.\n- r_H: Pearson correlation of HGB expected scores across the matched profiles.\n- r_M0: mean over the four no-history cells (B0) of the per-cell Pearson correlation of model expected scores.\n- r_M1: same over the four history cells (B1).\n- A421-A425: correlations within wave (100 profiles each), averaged over 2012/2018/2021, as in the primary outcome.\n  Trust and ISSP: 300 profiles, one wave.\n- Main analysis on absolute values: |r| per cell, then averaged over cells; |r_H|.\n\nAnalyses\n1. Primary: OLS across the 59 Qwen pairs, |r_M0| = a + b |r_H|. Report a, b, R^2, residual SD.\n2. By battery: the same fit within each battery (10, 28, 21 pairs); mean |r_M0| and mean |r_H| per battery.\n3. Signs: share of pairs with sign(r_M0) = sign(r_H), overall and among pairs with |r_H| >= 0.10.\n4. History: the same fit for |r_M1|; and the pair-level history increment |r_M1| - |r_M0| regressed on |r_M0|.\n5. Gemma: fit 1 on the 10 A421-A425 pairs, descriptive only.\n6. Uncertainty: profile-cluster bootstrap, 2,000 replicates, seed 20261013; profiles resampled within battery\n   (within wave for A421-A425); model and HGB values move together. Percentile 95% intervals.\n\nReading rules (fixed now)\n- Fixed level (result 1): 95% interval of b lies entirely below 0.5 and residual SD <= 0.15.\n- Tracks with an offset (result 2): interval of b includes 1 and excludes 0.\n- Partial (result 3): interval of b excludes 0 and 1 and is not entirely below 0.5.\n- Scattered (result 4): residual SD > 0.15 with the interval of b below 0.5 or including 0.\n- Anything else: described as is.\n\nNot claimed: a confirmatory test. Promotion to a main conclusion would need a preregistered test on data not used\nhere (e.g. Gemma on trust and ISSP).\n",
+  "inputs_sha256": {
+    "gender_ledger": "6940c55829066f9e0bd1edf77638e4f01cd3d3e88c908b52d1d1e49a4be6c4d8",
+    "gemma_ledger": "08df70510eff583a47733c2676f4482abb8484cd72fce888dbb2fd1a3a4b09da",
+    "trust_ledger": "dc49cccb1d3f4d7be49453496032e5bae018393b88e0e3d755ab0424a54a1a54",
+    "issp_ledger": "a3deb23061741f8c56cb2d74cd7a93489a5967062a7874d0ecd7cbb0b9074691",
+    "gender_hgb": "be1f71d9621676be096012a50eb36024e62c64eb17c935c1d6e695f9f898e607",
+    "trust_hgb": "f2c1ea95ab84567c7eb985d036954fbe272a48295253a977922f84a782eff29d",
+    "issp_hgb": "8c4f301789320416047e114a6691b4be2bdb89305c49499153587bed24221387"
+  },
+  "bootstrap_replicates": 2000,
+  "bootstrap_seed": 20261013,
+  "bootstrap": "profiles resampled within battery (within wave for A421-A425); Qwen and Gemma gender draws shared; model and HGB move together",
+  "pairs": {
+    "gender": 10,
+    "gemma_gender": 10,
+    "trust": 28,
+    "issp": 21
+  }
+}

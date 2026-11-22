@@ -114,7 +114,35 @@ class Battery:
 GENDER = Battery("gender", CGSS_ITEMS, STEM, SCALE, LABELS)
 TRUST = Battery("trust", TRUST_ITEMS, TRUST_STEM, TRUST_SCALE, TRUST_LABELS)
 ISSP = Battery("issp", ISSP_ITEMS, STEM, ISSP_SCALE, ISSP_LABELS)
-BATTERIES: dict[str, Battery] = {b.name: b for b in (GENDER, TRUST, ISSP)}
+
+# Wording experiment (PREREGISTRATION_V2.md, 2026-11-22): five items reworded,
+# three changing a surface cue and two near-synonymous controls. Each variant
+# battery is its source battery with only these item texts replaced; it is
+# scored in the cells without history and battery listing (A0-B0), where the
+# prompt holds the target item alone.
+WORDING_VARIANTS: Mapping[str, Mapping[str, str]] = {
+    "gender": {
+        "A422": "男人的能力生来就比女人强。",
+        "A423": "对女人来说，嫁个好丈夫比自己工作干得好更重要。",
+    },
+    "trust": {"N1605": "不认识的人"},
+    "issp": {
+        "M105": "对女人来说，当好家庭妇女也是一种成就。",
+        "M201": "一个家光靠一个人挣钱不够，夫妻都要工作。",
+    },
+}
+
+
+def with_wording(battery: Battery) -> Battery:
+    """The battery with the wording-experiment texts substituted."""
+    variants = WORDING_VARIANTS[battery.name]
+    items = tuple((i, variants.get(i, text)) for i, text in battery.items)
+    return Battery(f"{battery.name}_wording", items, battery.stem, battery.scale, battery.labels)
+
+
+BATTERIES: dict[str, Battery] = {
+    b.name: b for b in (GENDER, TRUST, ISSP, *(with_wording(x) for x in (GENDER, TRUST, ISSP)))
+}
 
 
 @dataclass(frozen=True)
